@@ -1,4 +1,4 @@
 locals {
   project_name = "playground"
-  region       = "japaneast"
+  region       = "westeurope"
 }
