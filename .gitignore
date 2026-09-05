@@ -1,0 +1,25 @@
+.DS_Store
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Python / Azure Functions
+.venv/
+__pycache__/
+*.pyc
+.python_packages/
+local.settings.json
+
