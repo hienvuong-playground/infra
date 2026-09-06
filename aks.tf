@@ -18,15 +18,15 @@ resource "azurerm_kubernetes_cluster" "main" {
   identity {
     type = "SystemAssigned"
   }
-}
 
-output "client_certificate" {
-  value     = azurerm_kubernetes_cluster.main.kube_config[0].client_certificate
-  sensitive = true
-}
+  azure_active_directory_role_based_access_control {
+    azure_rbac_enabled = true
+    tenant_id          = data.azurerm_client_config.current.tenant_id
+  }
 
+  local_account_disabled = true
+}
 output "kube_config" {
-  value = azurerm_kubernetes_cluster.main.kube_config_raw
-
+  value     = azurerm_kubernetes_cluster.main.kube_config_raw
   sensitive = true
 }
