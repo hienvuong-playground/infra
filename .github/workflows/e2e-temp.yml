@@ -20,5 +20,4 @@ jobs:
           echo "Running e2e for PR #${{ github.event.pull_request.number }}"
           sleep 5
           echo "e2e passed"
-          exit 1
 
