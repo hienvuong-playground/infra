@@ -4,18 +4,22 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 5.0.1"
     }
+    github = {
+      source  = "integrations/github"
+      version = "~> 6.0.1"
+    }
   }
-
-  backend "azurerm" {
-    use_azuread_auth     = true
-    storage_account_name = "stplaygroundterraform"
-    key                  = "terraform.tfstate"
-    container_name       = "tfstate"
+  backend "local" {
   }
 }
 
 provider "azurerm" {
   features {}
+}
+
+provider "github" {
+  token = var.github_token
+  owner = "hienvuong-playground"
 }
 
 data "azurerm_client_config" "current" {}
