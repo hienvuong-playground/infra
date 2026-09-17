@@ -11,6 +11,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: main
     steps:
       - uses: actions/checkout@v7
 
