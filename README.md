@@ -5,7 +5,7 @@ This repository contains Terraform configuration for the playground environment 
 ## Prerequisites
 
 - Azure CLI installed and logged in: `az login`
-- `Owner` and `Storage Blob Data Contributor` roles on the target Azure subscription
+- `Storage Blob Data Contributor` roles on the target Azure subscription
 
 ## Structure
 

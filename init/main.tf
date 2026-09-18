@@ -43,6 +43,14 @@ resource "azurerm_federated_identity_credential" "frontend" {
   subject                   = "repo:hienvuong-playground@325346053/frontend@1358357400:ref:refs/heads/main"
 }
 
+resource "azurerm_federated_identity_credential" "backend" {
+  name                      = "backend"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = "https://token.actions.githubusercontent.com"
+  user_assigned_identity_id = azurerm_user_assigned_identity.main.id
+  subject                   = "repo:hienvuong-playground@325346053/backend@1358360762:ref:refs/heads/main"
+}
+
 resource "azurerm_role_assignment" "owner" {
   principal_id         = azurerm_user_assigned_identity.main.principal_id
   role_definition_name = "Owner"
