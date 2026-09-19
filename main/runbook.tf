@@ -41,9 +41,18 @@ resource "azurerm_automation_runbook" "stop_aks" {
   automation_account_name = azurerm_automation_account.main.name
   log_verbose             = false
   log_progress            = true
-  runbook_type            = "PowerShell72"
+  runbook_type            = "PowerShell72" 
 
   content = file("${path.module}/scripts/stop-aks.ps1")
+
+  lifecycle {
+    # azurerm never reads runbook_type back from the API, so state stays "PowerShell"
+    # while Azure is already "PowerShell72". As runbook_type is ForceNew, that stale-state
+    # mismatch would otherwise force a needless destroy/recreate on every plan.
+    ignore_changes = [
+      runbook_type,
+    ]
+  }
 }
 
 resource "azurerm_automation_schedule" "main" {
