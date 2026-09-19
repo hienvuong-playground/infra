@@ -18,7 +18,7 @@ resource "azurerm_kubernetes_cluster_extension" "main" {
 resource "azurerm_kubernetes_flux_configuration" "backend" {
   name       = "backend"
   cluster_id = azurerm_kubernetes_cluster.main.id
-  namespace  = "flux"
+  namespace  = "flux-system"
 
   git_repository {
     url             = "ssh://git@github.com/hienvuong-playground/backend"
@@ -31,15 +31,11 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
     name = "backend"
     path = "./deploy"
 
-    # post_build {
-    #   substitute = {
-    #     example_var = "substitute_with_this"
-    #   }
-    #   substitute_from {
-    #     kind = "ConfigMap"
-    #     name = "example-configmap"
-    #   }
-    # }
+    post_build {
+      substitute = {
+        target_namespace = local.backend_namespace
+      }
+    }
   }
 
   depends_on = [
@@ -47,3 +43,46 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
   ]
 }
 
+
+resource "kubernetes_namespace_v1" "backend" {
+  metadata {
+    name = "backend"
+  }
+}
+
+locals {
+  flux_namespace = azurerm_kubernetes_flux_configuration.backend.namespace
+  backend_namespace = kubernetes_namespace_v1.backend.metadata[0].name
+}
+
+resource "kubernetes_role_v1" "flux_applier" {
+  metadata {
+    name      = "flux-applier-role"
+    namespace = local.backend_namespace
+  }
+
+  rule {
+    api_groups = ["*"]
+    resources  = ["*"]
+    verbs      = ["*"]
+  }
+}
+
+resource "kubernetes_role_binding_v1" "flux_applier" {
+  metadata {
+    name      = "flux-applier-binding"
+    namespace = local.backend_namespace
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role_v1.flux_applier.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "flux-applier"
+    namespace = local.flux_namespace
+  }
+}
