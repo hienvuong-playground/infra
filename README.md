@@ -5,7 +5,7 @@ This repository contains Terraform configuration for the playground environment 
 ## Prerequisites
 
 - Azure CLI installed and logged in: `az login`
-- `Storage Blob Data Contributor` roles on the target Azure subscription
+- `Contributor` `Storage Blob Data Contributor` roles on the target Azure subscription
 
 ## Structure
 
@@ -14,7 +14,7 @@ This repository contains Terraform configuration for the playground environment 
 
 ## GitHub token
 
-The `init` root uses a GitHub token to write GitHub Actions organization variables. Create a classic personal access token at `https://github.com/settings/tokens` with the `admin:org` scope. Then create the file `init/secrets.tfvars` and add this line:
+The `init` root uses a GitHub token to write GitHub Actions organization variables. Create a classic personal access token at `https://github.com/settings/tokens` with the `admin:org` scope. Then create the file `init/secrets.auto.tfvars` and add this line:
 
 ```
 github_token = "your-token-here"
@@ -26,6 +26,6 @@ Run these commands from the `init/` directory.
 
 ```
 terraform init -upgrade -reconfigure
-terraform plan -var-file=secrets.tfvars -out tfplan
+terraform plan -out tfplan # no var-file flag needed, secrets.auto.tfvars is loaded automatically
 terraform apply tfplan
 ```
