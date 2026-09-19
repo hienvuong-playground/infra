@@ -41,7 +41,7 @@ resource "azurerm_automation_runbook" "stop_aks" {
   automation_account_name = azurerm_automation_account.main.name
   log_verbose             = false
   log_progress            = true
-  runbook_type            = "PowerShell72" 
+  runbook_type            = "PowerShell72"
 
   content = file("${path.module}/scripts/stop-aks.ps1")
 
@@ -61,8 +61,19 @@ resource "azurerm_automation_schedule" "main" {
   automation_account_name = azurerm_automation_account.main.name
   frequency               = "Day"
   interval                = 1
-  start_time              = "2026-09-20T01:00:00+07:00"
-  description             = "Stops AKS every day at 1am Vietnam time"
+  # 1am Vietnam time (UTC+7). Computed dynamically so a recreate always lands
+  # comfortably in the future (Azure rejects start_time < 5 minutes out).
+  # timestamp() is UTC; +48h guarantees the resulting 01:00+07:00 is ~1-2 days
+  # ahead regardless of the UTC hour at apply time. The schedule is daily, so
+  # only the first run is offset — subsequent runs fire at 1am every day.
+  start_time  = "${formatdate("YYYY-MM-DD", timeadd(timestamp(), "24h"))}T01:00:00+07:00"
+  description = "Stops AKS every day at 1am Vietnam time"
+
+  lifecycle {
+    ignore_changes = [
+      start_time,
+    ]
+  }
 }
 
 resource "azurerm_automation_job_schedule" "link" {
