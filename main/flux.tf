@@ -1,3 +1,9 @@
+locals {
+  flux_namespace       = azurerm_kubernetes_flux_configuration.backend.namespace
+  backend_namespace    = kubernetes_namespace_v1.backend.metadata[0].name
+  service_account_name = kubernetes_service_account_v1.backend.metadata[0].name
+}
+
 resource "tls_private_key" "backend" {
   algorithm = "ED25519"
 }
@@ -21,9 +27,9 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
   namespace  = "flux-system"
 
   git_repository {
-    url             = "ssh://git@github.com/hienvuong-playground/backend"
-    reference_type  = "branch"
-    reference_value = "main"
+    url                    = "ssh://git@github.com/hienvuong-playground/backend"
+    reference_type         = "branch"
+    reference_value        = "main"
     ssh_private_key_base64 = base64encode(tls_private_key.backend.private_key_pem)
   }
 
@@ -34,6 +40,9 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
     post_build {
       substitute = {
         target_namespace = local.backend_namespace
+        id_keyvault      = azurerm_user_assigned_identity.backend.client_id
+        keyvault_name    = azurerm_key_vault.main.name
+        tenant_id        = data.azurerm_client_config.current.tenant_id
       }
     }
   }
@@ -43,16 +52,40 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
   ]
 }
 
+resource "azurerm_user_assigned_identity" "backend" {
+  location            = azurerm_resource_group.main.location
+  name                = "id-backend-${local.project_name}"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_role_assignment" "secret_user" {
+  principal_id         = azurerm_user_assigned_identity.backend.principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.main.id
+}
+
+resource "kubernetes_service_account_v1" "backend" {
+  metadata {
+    name      = "backend-workload"
+    namespace = local.backend_namespace
+    annotations = {
+      "azure.workload.identity/client-id" = azurerm_user_assigned_identity.backend.client_id
+    }
+  }
+}
+
+resource "azurerm_federated_identity_credential" "backend" {
+  name                      = "fed-backend"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.backend.id
+  subject                   = "system:serviceaccount:${local.backend_namespace}:${local.service_account_name}"
+}
 
 resource "kubernetes_namespace_v1" "backend" {
   metadata {
     name = "backend"
   }
-}
-
-locals {
-  flux_namespace = azurerm_kubernetes_flux_configuration.backend.namespace
-  backend_namespace = kubernetes_namespace_v1.backend.metadata[0].name
 }
 
 resource "kubernetes_role_v1" "flux_applier" {
