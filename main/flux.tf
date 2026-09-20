@@ -46,8 +46,9 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
   }
 
   kustomizations {
-    name = "cluster"
-    path = "./gitops/clusters"
+    name                       = "cluster"
+    path                       = "./gitops/clusters"
+    garbage_collection_enabled = true
   }
 
   depends_on = [
