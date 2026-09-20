@@ -1,6 +1,6 @@
 resource "helm_release" "flux_web" {
   name             = "flux-web"
-  namespace        = local.flux_namespace
+  namespace        = "flux-system" #temp
   repository       = "oci://ghcr.io/controlplaneio-fluxcd/charts"
   chart            = "flux-operator"
   create_namespace = false
