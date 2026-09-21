@@ -4,22 +4,22 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 5.0.1"
     }
-    tls = {
-      source  = "hashicorp/tls"
-      version = "~> 4.4.1"
-    }
-    github = {
-      source  = "integrations/github"
-      version = "~> 6.13.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 3.2.1"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 3.3.0"
-    }
+    # tls = {
+    #   source  = "hashicorp/tls"
+    #   version = "~> 4.4.1"
+    # }
+    # github = {
+    #   source  = "integrations/github"
+    #   version = "~> 6.13.0"
+    # }
+    # kubernetes = {
+    #   source  = "hashicorp/kubernetes"
+    #   version = "~> 3.2.1"
+    # }
+    # helm = {
+    #   source  = "hashicorp/helm"
+    #   version = "~> 3.3.0"
+    # }
   }
 
   backend "azurerm" {
@@ -34,15 +34,15 @@ provider "azurerm" {
   features {}
 }
 
-provider "github" {
-  owner = "hienvuong-playground"
+# provider "github" {
+#   owner = "hienvuong-playground"
 
-  app_auth {
-    id              = "4998541"
-    installation_id = "162938087"
-    pem_file        = var.github_app_pem
-  }
-}
+#   app_auth {
+#     id              = "4998541"
+#     installation_id = "162938087"
+#     pem_file        = var.github_app_pem
+#   }
+# }
 
 # provider "kubernetes" {
 #   host                   = azurerm_kubernetes_cluster.main.kube_config[0].host
