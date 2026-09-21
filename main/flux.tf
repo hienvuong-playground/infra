@@ -4,57 +4,57 @@
 #   service_account_name = kubernetes_service_account_v1.backend.metadata[0].name
 # }
 
-resource "tls_private_key" "backend" {
-  algorithm = "ED25519"
-}
+# resource "tls_private_key" "backend" {
+#   algorithm = "ED25519"
+# }
 
-resource "github_repository_deploy_key" "backend" {
-  title      = "flux-backend"
-  repository = "backend"
-  key        = tls_private_key.backend.public_key_openssh
-  read_only  = true
-}
+# resource "github_repository_deploy_key" "backend" {
+#   title      = "flux-backend"
+#   repository = "backend"
+#   key        = tls_private_key.backend.public_key_openssh
+#   read_only  = true
+# }
 
-resource "azurerm_kubernetes_cluster_extension" "main" {
-  name           = "flux"
-  cluster_id     = azurerm_kubernetes_cluster.main.id
-  extension_type = "microsoft.flux"
-}
+# resource "azurerm_kubernetes_cluster_extension" "main" {
+#   name           = "flux"
+#   cluster_id     = azurerm_kubernetes_cluster.main.id
+#   extension_type = "microsoft.flux"
+# }
 
-resource "tls_private_key" "infra" {
-  algorithm = "ED25519"
-}
+# resource "tls_private_key" "infra" {
+#   algorithm = "ED25519"
+# }
 
-resource "github_repository_deploy_key" "infra" {
-  title      = "flux-infra"
-  repository = "infra"
-  key        = tls_private_key.infra.public_key_openssh
-  read_only  = true
-}
+# resource "github_repository_deploy_key" "infra" {
+#   title      = "flux-infra"
+#   repository = "infra"
+#   key        = tls_private_key.infra.public_key_openssh
+#   read_only  = true
+# }
 
-resource "azurerm_kubernetes_flux_configuration" "infra" {
-  name       = "flux-config"
-  cluster_id = azurerm_kubernetes_cluster.main.id
-  namespace  = "flux-system"
-  scope      = "cluster"
+# resource "azurerm_kubernetes_flux_configuration" "infra" {
+#   name       = "flux-config"
+#   cluster_id = azurerm_kubernetes_cluster.main.id
+#   namespace  = "flux-system"
+#   scope      = "cluster"
 
-  git_repository {
-    url                    = "ssh://git@github.com/hienvuong-playground/infra"
-    reference_type         = "branch"
-    reference_value        = "main"
-    ssh_private_key_base64 = base64encode(tls_private_key.infra.private_key_pem)
-  }
+#   git_repository {
+#     url                    = "ssh://git@github.com/hienvuong-playground/infra"
+#     reference_type         = "branch"
+#     reference_value        = "main"
+#     ssh_private_key_base64 = base64encode(tls_private_key.infra.private_key_pem)
+#   }
 
-  kustomizations {
-    name                       = "cluster"
-    path                       = "./gitops/clusters"
-    garbage_collection_enabled = true
-  }
+#   kustomizations {
+#     name                       = "cluster"
+#     path                       = "./gitops/clusters"
+#     garbage_collection_enabled = true
+#   }
 
-  depends_on = [
-    azurerm_kubernetes_cluster_extension.main
-  ]
-}
+#   depends_on = [
+#     azurerm_kubernetes_cluster_extension.main
+#   ]
+# }
 
 # resource "azurerm_kubernetes_flux_configuration" "backend" {
 #   name       = "backend"
