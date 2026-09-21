@@ -24,3 +24,23 @@ resource "azurerm_role_assignment" "k8s_contributor" {
   role_definition_name = "Contributor"
   scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
 }
+
+resource "azurerm_user_assigned_identity" "backend" {
+  location            = azurerm_resource_group.main.location
+  name                = "id-${local.project_name}-backend"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_federated_identity_credential" "backend" {
+  name                      = "fed-backend"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.backend.id
+  subject                   = "system:serviceaccount:backend:backend-workload"
+}
+
+resource "azurerm_role_assignment" "secret_user" {
+  principal_id         = azurerm_user_assigned_identity.backend.principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.main.id
+}
