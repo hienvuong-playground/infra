@@ -9,29 +9,10 @@ resource "azurerm_automation_account" "main" {
   }
 }
 
-resource "azurerm_role_definition" "aks_start_stop" {
-  name        = "AKS Start Stop - ${local.project_name}"
-  scope       = azurerm_kubernetes_cluster.main.id
-  description = "Allows starting, stopping, and reading AKS managed clusters"
-
-  permissions {
-    actions = [
-      "Microsoft.ContainerService/managedClusters/start/action",
-      "Microsoft.ContainerService/managedClusters/stop/action",
-      "Microsoft.ContainerService/managedClusters/read",
-    ]
-    not_actions = []
-  }
-
-  assignable_scopes = [
-    azurerm_kubernetes_cluster.main.id,
-  ]
-}
-
-resource "azurerm_role_assignment" "runbook_aks_start_stop" {
-  scope              = azurerm_kubernetes_cluster.main.id
-  role_definition_id = azurerm_role_definition.aks_start_stop.role_definition_resource_id
-  principal_id       = azurerm_automation_account.main.identity[0].principal_id
+resource "azurerm_role_assignment" "runbook_contributor" {
+  scope                = azurerm_kubernetes_cluster.main.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_automation_account.main.identity[0].principal_id
 }
 
 resource "azurerm_automation_runbook" "stop_aks" {
