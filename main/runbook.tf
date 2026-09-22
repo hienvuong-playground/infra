@@ -64,7 +64,7 @@ resource "azurerm_automation_job_schedule" "link" {
   runbook_name            = azurerm_automation_runbook.stop_aks.name
 
   parameters = {
-    resourcegroupname = azurerm_resource_group.main.name
-    aksclustername    = azurerm_kubernetes_cluster.main.name
+    resourcegroup = azurerm_resource_group.main.name
+    clustername   = azurerm_kubernetes_cluster.main.name
   }
 }
