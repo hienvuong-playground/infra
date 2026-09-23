@@ -10,6 +10,25 @@ resource "azurerm_kubernetes_cluster" "main" {
     secret_rotation_enabled = false
   }
 
+  network_profile {
+    network_plugin      = "azure"
+    network_plugin_mode = "overlay"
+    network_policy      = "cilium"
+    network_data_plane  = "cilium"
+    advanced_networking {
+      observability_enabled = true
+      security_enabled      = false
+    }
+    outbound_type  = "loadBalancer"
+    pod_cidr       = "10.244.0.0/16"
+    service_cidr   = "10.0.0.0/16"
+    dns_service_ip = "10.0.0.10"
+  }
+
+  workload_autoscaler_profile {
+    keda_enabled = true
+  }
+
   default_node_pool {
     name       = "default"
     node_count = 1
