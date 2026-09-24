@@ -1,8 +1,15 @@
 resource "azurerm_servicebus_namespace" "main" {
-  name                = "sb-${local.project_name}-${random_string.suffix.result}"
+  name                = "sbns-${local.project_name}-${random_string.suffix.result}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   sku                 = "Basic"
+}
+
+resource "azurerm_servicebus_queue" "main" {
+  name         = "sbq-${local.project_name}"
+  namespace_id = azurerm_servicebus_namespace.main.id
+
+  partitioning_enabled = false
 }
 
 resource "azurerm_user_assigned_identity" "keda" {
