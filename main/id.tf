@@ -44,3 +44,23 @@ resource "azurerm_role_assignment" "secret_user" {
   role_definition_name = "Key Vault Secrets User"
   scope                = azurerm_key_vault.main.id
 }
+
+resource "azurerm_user_assigned_identity" "keda_backend" {
+  location            = azurerm_resource_group.main.location
+  name                = "id-${local.project_name}-keda-backend"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_federated_identity_credential" "keda_backend" {
+  name                      = "fed-keda-backend"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.keda_backend.id
+  subject                   = "system:serviceaccount:kube-system:keda-operator"
+}
+
+resource "azurerm_role_assignment" "keda_backend_servicebus_data_owner" {
+  principal_id         = azurerm_user_assigned_identity.keda_backend.principal_id
+  role_definition_name = "Azure Service Bus Data Owner"
+  scope                = azurerm_servicebus_namespace.main.id
+}
