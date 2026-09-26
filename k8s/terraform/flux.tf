@@ -77,7 +77,7 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
         ID_KEDA_BACKEND = data.azurerm_user_assigned_identity.keda_backend.client_id
         SERVICE_BUS_NAMESPACE = data.azurerm_servicebus_namespace.main.name
         SERVICE_BUS_QUEUE = data.azurerm_servicebus_queue.example.name
-        SERVICE_BUS_HOSTNAME = data.azurerm_servicebus_namespace.main.endpoint
+        SERVICE_BUS_HOSTNAME = "${data.azurerm_servicebus_namespace.main.name}.servicebus.windows.net"
         ID_BACKEND = data.azurerm_user_assigned_identity.backend.client_id
         AZURE_TENANT_ID = data.azurerm_client_config.current.tenant_id
       }
