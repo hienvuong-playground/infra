@@ -25,17 +25,17 @@ spec:
         kind: HelmRepository
         name: flux-operator
         namespace: flux-system
-  install:
-    createNamespace: false
-    crds: Create
-    remediation:
-      retries: 3
-      remediateLastFailure: true
-  upgrade:
-    crds: CreateReplace
-    remediation:
-      retries: 3
-      remediateLastFailure: true
+  # install:
+  #   createNamespace: false
+  #   crds: Create
+  #   remediation:
+  #     retries: 3
+  #     remediateLastFailure: true
+  # upgrade:
+  #   crds: CreateReplace
+  #   remediation:
+  #     retries: 3
+  #     remediateLastFailure: true
   values:
     fullnameOverride: flux-web
     web:

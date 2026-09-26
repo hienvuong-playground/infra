@@ -70,3 +70,23 @@ resource "azurerm_role_assignment" "keda_backend_servicebus_data_owner" {
   role_definition_name = "Azure Service Bus Data Owner"
   scope                = azurerm_servicebus_namespace.main.id
 }
+
+resource "azurerm_user_assigned_identity" "cert_manager" {
+  location            = azurerm_resource_group.main.location
+  name                = "id-${local.project_name}-cert-manager"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_federated_identity_credential" "cert_manager" {
+  name                      = "fed-cert-manager"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.cert_manager.id
+  subject                   = "system:serviceaccount:cert-manager:cert-manager"
+}
+
+resource "azurerm_role_assignment" "cert_manager_dns_zone_contributor" {
+  principal_id         = azurerm_user_assigned_identity.cert_manager.principal_id
+  role_definition_name = "DNS Zone Contributor"
+  scope                = data.azurerm_dns_zone.dns_zone.id
+}

@@ -31,9 +31,11 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   default_node_pool {
-    name       = "default"
-    node_count = 1
-    vm_size    = "standard_d4als_v7"
+    name                 = "default"
+    vm_size              = "standard_d4als_v7"
+    node_count           = 1
+
+    temporary_name_for_rotation = "temp"
 
     upgrade_settings {
       max_surge = "10%"

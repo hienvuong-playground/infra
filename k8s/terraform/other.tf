@@ -17,3 +17,17 @@ data "azurerm_user_assigned_identity" "backend" {
   name                = "id-${local.project_name}-backend"
   resource_group_name = "rg-${local.project_name}"
 }
+
+data "azurerm_user_assigned_identity" "cert_manager" {
+  name                = "id-${local.project_name}-cert-manager"
+  resource_group_name = "rg-${local.project_name}"
+}
+
+data "azurerm_resource_group" "manual" {
+  name = "rg-${local.project_name}-manual"
+}
+
+data "azurerm_dns_zone" "dns_zone" {
+  name                = "playground.hienvuong.com"
+  resource_group_name = data.azurerm_resource_group.manual.name
+}

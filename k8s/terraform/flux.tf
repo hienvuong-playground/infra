@@ -49,6 +49,15 @@ resource "azurerm_kubernetes_flux_configuration" "k8s" {
     name                       = "cluster"
     path                       = "./gitops/clusters"
     garbage_collection_enabled = true
+
+    post_build {
+      substitute = {
+        RG_MANUAL = data.azurerm_resource_group.manual.name
+        DOMAIN_NAME = data.azurerm_dns_zone.dns_zone.name
+        AZURE_SUBSCRIPTION_ID = data.azurerm_client_config.current.subscription_id
+        MI_CERT_MANAGER = data.azurerm_user_assigned_identity.cert_manager.client_id
+      }
+    }
   }
 
   depends_on = [
