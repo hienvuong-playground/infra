@@ -28,8 +28,7 @@ jobs:
           terraform_version: 1.16.1
 
       - name: Terraform Init
-        run: terraform init -reconfigure -upgrade \
-            -backend-config=../terraform-backend/main.tfbackend
+        run: terraform init -reconfigure -upgrade -backend-config=../terraform-backend/main.tfbackend
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
