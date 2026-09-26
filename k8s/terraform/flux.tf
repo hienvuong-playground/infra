@@ -56,6 +56,8 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
         DOMAIN_NAME = data.azurerm_dns_zone.dns_zone.name
         AZURE_SUBSCRIPTION_ID = data.azurerm_client_config.current.subscription_id
         MI_CERT_MANAGER = data.azurerm_user_assigned_identity.cert_manager.client_id
+        GATEWAY_PIP_NAME = data.azurerm_public_ip.gateway.name
+        RG_MAIN = data.azurerm_public_ip.gateway.resource_group_name
       }
     }
   }
@@ -89,6 +91,7 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
         SERVICE_BUS_HOSTNAME = "${data.azurerm_servicebus_namespace.main.name}.servicebus.windows.net"
         ID_BACKEND = data.azurerm_user_assigned_identity.backend.client_id
         AZURE_TENANT_ID = data.azurerm_client_config.current.tenant_id
+        DOMAIN_NAME = data.azurerm_dns_zone.dns_zone.name
       }
     }
   }

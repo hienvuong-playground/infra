@@ -5,3 +5,5 @@ resources:
   - flux-ui
   - observability
   - cert-manager
+  - gateway-api
+  - istio

@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: wildcard
-  namespace: backend
+  namespace: istio-ingress
 spec:
   secretName: wildcard-tls
   privateKey:

@@ -1,0 +1,42 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: istio-init
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 2m
+  timeout: 5m
+  wait: true
+  prune: true
+  path: ./k8s/gitops/infrastructure/istio/init
+  sourceRef:
+    kind: GitRepository
+    name: flux-config
+    namespace: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: istio-main
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 2m
+  timeout: 5m
+  wait: true
+  prune: true
+  dependsOn:
+    - name: gateway-api-crds
+    - name: istio-init
+    - name: cert-manager-init
+  path: ./k8s/gitops/infrastructure/istio/main
+  postBuild:
+    substitute:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      GATEWAY_PIP_NAME: ${GATEWAY_PIP_NAME}
+      RG_MAIN: ${RG_MAIN}
+  sourceRef:
+    kind: GitRepository
+    name: flux-config
+    namespace: flux-system

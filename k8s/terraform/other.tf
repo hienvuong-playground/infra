@@ -23,6 +23,11 @@ data "azurerm_user_assigned_identity" "cert_manager" {
   resource_group_name = "rg-${local.project_name}"
 }
 
+data "azurerm_public_ip" "gateway" {
+  name                = "pip-${local.project_name}-gateway"
+  resource_group_name = "rg-${local.project_name}"
+}
+
 data "azurerm_resource_group" "manual" {
   name = "rg-${local.project_name}-manual"
 }
