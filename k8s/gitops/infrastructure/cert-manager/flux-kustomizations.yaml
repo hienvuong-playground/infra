@@ -29,6 +29,12 @@ spec:
   dependsOn:
     - name: cert-manager-init
   path: ./k8s/gitops/infrastructure/cert-manager/main
+  postBuild:
+    substitute:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      RG_MANUAL: ${RG_MANUAL}
+      AZURE_SUBSCRIPTION_ID: ${AZURE_SUBSCRIPTION_ID}
+      MI_CERT_MANAGER: ${MI_CERT_MANAGER}
   sourceRef:
     kind: GitRepository
     name: flux-config
