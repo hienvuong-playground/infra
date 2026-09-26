@@ -26,7 +26,8 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   workload_autoscaler_profile {
-    keda_enabled = true
+    keda_enabled                    = true
+    vertical_pod_autoscaler_enabled = true
   }
 
   default_node_pool {
