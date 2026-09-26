@@ -32,7 +32,7 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   default_node_pool {
     name                 = "default"
-    vm_size              = "standard_e2ads_v7"
+    vm_size              = "standard_d4as_v7"
     node_count           = 1
 
     temporary_name_for_rotation = "temp"
