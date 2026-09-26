@@ -28,6 +28,5 @@ spec:
   values:
     crds:
       enabled: true
-      keep: true
     podLabels:
       azure.workload.identity/use: "true"
