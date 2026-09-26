@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: www
-  namespace: cert-manager
+  namespace: backend
 spec:
   secretName: www-tls
   privateKey:
