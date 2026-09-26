@@ -1,0 +1,3 @@
+use_azuread_auth     = true
+storage_account_name = "stplaygroundinit"
+container_name       = "tfstate"

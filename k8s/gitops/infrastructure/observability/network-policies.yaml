@@ -1,0 +1,68 @@
+# Step 1 of network segmentation for the observability namespace.
+#
+# grafana-egress:     default-deny egress on Grafana, allowing only DNS and
+#                     queries to the Prometheus datasource.
+# prometheus-ingress: default-deny ingress on Prometheus, allowing only Grafana
+#                     (datasource queries), the OTEL Collector (remote-write),
+#                     and KEDA (ScaledObject metric queries).
+#
+# NOTE: Grafana reaches Prometheus via the Service on port 80, but Cilium
+# enforces on the destination *pod* port, which is 9090 (the prometheus-server
+# container port). All toPorts below use 9090.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: grafana-egress
+  namespace: observability
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  egress:
+    # DNS resolution (CoreDNS) — required to resolve prometheus-server.svc
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    # Prometheus datasource queries
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: prometheus-ingress
+  namespace: observability
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  ingress:
+    # All allowed clients query the prometheus-server container port (9090/TCP).
+    # fromEndpoints is OR'd, so a source matching any selector is permitted.
+    - fromEndpoints:
+        # Grafana datasource queries
+        - matchLabels:
+            app.kubernetes.io/name: grafana
+        # OTEL Collector remote-write (/api/v1/write)
+        - matchLabels:
+            app.kubernetes.io/name: otel-collector
+        # KEDA operator scaler polling (Prometheus trigger for the backend ScaledObject)
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            app.kubernetes.io/name: keda-operator
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP

@@ -1,0 +1,153 @@
+data "azurerm_kubernetes_cluster" "main" {
+  name                = "aks-${local.project_name}"
+  resource_group_name = "rg-${local.project_name}"
+}
+
+resource "tls_private_key" "backend" {
+  algorithm = "ED25519"
+}
+
+resource "github_repository_deploy_key" "backend" {
+  title      = "flux-backend"
+  repository = "backend"
+  key        = tls_private_key.backend.public_key_openssh
+  read_only  = true
+}
+
+resource "azurerm_kubernetes_cluster_extension" "main" {
+  name           = "flux"
+  cluster_id     = data.azurerm_kubernetes_cluster.main.id
+  extension_type = "microsoft.flux"
+}
+
+resource "tls_private_key" "k8s" {
+  algorithm = "ED25519"
+}
+
+
+resource "github_repository_deploy_key" "k8s" {
+  title      = "flux-k8s"
+  repository = "k8s"
+  key        = tls_private_key.k8s.public_key_openssh
+  read_only  = true
+}
+
+resource "azurerm_kubernetes_flux_configuration" "k8s" {
+  name       = "flux-config"
+  cluster_id = data.azurerm_kubernetes_cluster.main.id
+  namespace  = "flux-system"
+  scope      = "cluster"
+
+  git_repository {
+    url                    = "ssh://git@github.com/hienvuong-playground/k8s"
+    reference_type         = "branch"
+    reference_value        = "main"
+    ssh_private_key_base64 = base64encode(tls_private_key.k8s.private_key_pem)
+  }
+
+  kustomizations {
+    name                       = "cluster"
+    path                       = "./gitops/clusters"
+    garbage_collection_enabled = true
+  }
+
+  depends_on = [
+    azurerm_kubernetes_cluster_extension.main
+  ]
+}
+
+resource "azurerm_kubernetes_flux_configuration" "backend" {
+  name       = "backend"
+  cluster_id = data.azurerm_kubernetes_cluster.main.id
+  namespace  = "backend"
+
+  git_repository {
+    url                    = "ssh://git@github.com/hienvuong-playground/backend"
+    reference_type         = "branch"
+    reference_value        = "main"
+    ssh_private_key_base64 = base64encode(tls_private_key.backend.private_key_pem)
+  }
+
+  kustomizations {
+    name = "backend"
+    path = "./deploy"
+    garbage_collection_enabled = true
+    post_build {
+      substitute = {
+        ID_KEDA_BACKEND = data.azurerm_user_assigned_identity.keda_backend.client_id
+      }
+    }
+  }
+
+  depends_on = [
+    azurerm_kubernetes_cluster_extension.main
+  ]
+}
+
+# resource "azurerm_user_assigned_identity" "backend" {
+#   location            = azurerm_resource_group.main.location
+#   name                = "id-backend-${local.project_name}"
+#   resource_group_name = azurerm_resource_group.main.name
+# }
+
+# resource "azurerm_role_assignment" "secret_user" {
+#   principal_id         = azurerm_user_assigned_identity.backend.principal_id
+#   role_definition_name = "Key Vault Secrets User"
+#   scope                = azurerm_key_vault.main.id
+# }
+
+# resource "kubernetes_service_account_v1" "backend" {
+#   metadata {
+#     name      = "backend-workload"
+#     namespace = local.backend_namespace
+#     annotations = {
+#       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.backend.client_id
+#     }
+#   }
+# }
+
+# resource "azurerm_federated_identity_credential" "backend" {
+#   name                      = "fed-backend"
+#   audience                  = ["api://AzureADTokenExchange"]
+#   issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+#   user_assigned_identity_id = azurerm_user_assigned_identity.backend.id
+#   subject                   = "system:serviceaccount:${local.backend_namespace}:${local.service_account_name}"
+# }
+
+# resource "kubernetes_namespace_v1" "backend" {
+#   metadata {
+#     name = "backend"
+#   }
+# }
+
+# resource "kubernetes_role_v1" "flux_applier" {
+#   metadata {
+#     name      = "flux-applier-role"
+#     namespace = local.backend_namespace
+#   }
+
+#   rule {
+#     api_groups = ["*"]
+#     resources  = ["*"]
+#     verbs      = ["*"]
+#   }
+# }
+
+# resource "kubernetes_role_binding_v1" "flux_applier" {
+#   metadata {
+#     name      = "flux-applier-binding"
+#     namespace = local.backend_namespace
+#   }
+
+#   role_ref {
+#     api_group = "rbac.authorization.k8s.io"
+#     kind      = "Role"
+#     name      = kubernetes_role_v1.flux_applier.metadata[0].name
+#   }
+
+#   subject {
+#     kind      = "ServiceAccount"
+#     name      = "flux-applier"
+#     namespace = local.flux_namespace
+#   }
+# }

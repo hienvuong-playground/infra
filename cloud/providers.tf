@@ -23,10 +23,7 @@ terraform {
   }
 
   backend "azurerm" {
-    use_azuread_auth     = true
-    storage_account_name = "stplaygroundinit"
-    key                  = "terraform.tfstate"
-    container_name       = "tfstate"
+    key = "cloud.tfstate"
   }
 }
 

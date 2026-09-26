@@ -1,0 +1,20 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel
+  namespace: observability
+spec:
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc: {}
+          http: {}
+    exporters:
+      prometheusremotewrite:
+        endpoint: http://prometheus-server.observability.svc.cluster.local/api/v1/write
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          exporters: [prometheusremotewrite]

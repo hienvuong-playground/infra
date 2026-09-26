@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  terraform-cloud:
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -28,7 +28,8 @@ jobs:
           terraform_version: 1.16.1
 
       - name: Terraform Init
-        run: terraform init -reconfigure -upgrade
+        run: terraform init -reconfigure -upgrade \
+            -backend-config=../terraform-backend/main.tfbackend
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
