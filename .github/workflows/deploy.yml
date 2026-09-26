@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     defaults:
       run:
-        working-directory: main
+        working-directory: cloud
     steps:
       - uses: actions/checkout@v7
 
