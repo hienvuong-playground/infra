@@ -9,7 +9,7 @@ spec:
   timeout: 5m
   wait: true
   prune: true
-  path: ./gitops/infrastructure/observability/operator
+  path: ./k8s/gitops/infrastructure/observability/operator
   sourceRef:
     kind: GitRepository
     name: flux-config
@@ -28,7 +28,7 @@ spec:
   prune: true
   dependsOn:
     - name: otel-operator
-  path: ./gitops/infrastructure/observability/config
+  path: ./k8s/gitops/infrastructure/observability/config
   sourceRef:
     kind: GitRepository
     name: flux-config

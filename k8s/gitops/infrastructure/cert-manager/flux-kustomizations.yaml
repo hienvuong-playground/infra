@@ -9,7 +9,7 @@ spec:
   timeout: 5m
   wait: true
   prune: true
-  path: ./gitops/infrastructure/cert-manager/init
+  path: ./k8s/gitops/infrastructure/cert-manager/init
   sourceRef:
     kind: GitRepository
     name: flux-config
@@ -28,7 +28,7 @@ spec:
   prune: true
   dependsOn:
     - name: cert-manager-init
-  path: ./gitops/infrastructure/cert-manager/main
+  path: ./k8s/gitops/infrastructure/cert-manager/main
   sourceRef:
     kind: GitRepository
     name: flux-config
