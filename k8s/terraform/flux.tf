@@ -75,6 +75,11 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
     post_build {
       substitute = {
         ID_KEDA_BACKEND = data.azurerm_user_assigned_identity.keda_backend.client_id
+        SERVICE_BUS_NAMESPACE = data.azurerm_servicebus_namespace.main.name
+        SERVICE_BUS_QUEUE = data.azurerm_servicebus_queue.example.name
+        SERVICE_BUS_HOSTNAME = data.azurerm_servicebus_namespace.main.endpoint
+        ID_BACKEND = data.azurerm_user_assigned_identity.backend.client_id
+        AZURE_TENANT_ID = data.azurerm_client_config.current.tenant_id
       }
     }
   }
@@ -83,71 +88,3 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
     azurerm_kubernetes_cluster_extension.main
   ]
 }
-
-# resource "azurerm_user_assigned_identity" "backend" {
-#   location            = azurerm_resource_group.main.location
-#   name                = "id-backend-${local.project_name}"
-#   resource_group_name = azurerm_resource_group.main.name
-# }
-
-# resource "azurerm_role_assignment" "secret_user" {
-#   principal_id         = azurerm_user_assigned_identity.backend.principal_id
-#   role_definition_name = "Key Vault Secrets User"
-#   scope                = azurerm_key_vault.main.id
-# }
-
-# resource "kubernetes_service_account_v1" "backend" {
-#   metadata {
-#     name      = "backend-workload"
-#     namespace = local.backend_namespace
-#     annotations = {
-#       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.backend.client_id
-#     }
-#   }
-# }
-
-# resource "azurerm_federated_identity_credential" "backend" {
-#   name                      = "fed-backend"
-#   audience                  = ["api://AzureADTokenExchange"]
-#   issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
-#   user_assigned_identity_id = azurerm_user_assigned_identity.backend.id
-#   subject                   = "system:serviceaccount:${local.backend_namespace}:${local.service_account_name}"
-# }
-
-# resource "kubernetes_namespace_v1" "backend" {
-#   metadata {
-#     name = "backend"
-#   }
-# }
-
-# resource "kubernetes_role_v1" "flux_applier" {
-#   metadata {
-#     name      = "flux-applier-role"
-#     namespace = local.backend_namespace
-#   }
-
-#   rule {
-#     api_groups = ["*"]
-#     resources  = ["*"]
-#     verbs      = ["*"]
-#   }
-# }
-
-# resource "kubernetes_role_binding_v1" "flux_applier" {
-#   metadata {
-#     name      = "flux-applier-binding"
-#     namespace = local.backend_namespace
-#   }
-
-#   role_ref {
-#     api_group = "rbac.authorization.k8s.io"
-#     kind      = "Role"
-#     name      = kubernetes_role_v1.flux_applier.metadata[0].name
-#   }
-
-#   subject {
-#     kind      = "ServiceAccount"
-#     name      = "flux-applier"
-#     namespace = local.flux_namespace
-#   }
-# }

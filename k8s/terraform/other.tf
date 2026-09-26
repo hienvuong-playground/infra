@@ -3,14 +3,17 @@ data "azurerm_user_assigned_identity" "keda_backend" {
   resource_group_name = "rg-${local.project_name}"
 }
 
-# resource "kubernetes_annotations" "keda_operator_sa" {
-#   api_version = "v1"
-#   kind        = "ServiceAccount"
-#   metadata {
-#     name      = "keda-operator"
-#     namespace = "kube-system"
-#   }
-#   annotations = {
-#     "azure.workload.identity/client-id" = data.azurerm_user_assigned_identity.keda_backend.client_id
-#   }
-# }
+data "azurerm_servicebus_namespace" "main" {
+  name                = "sbns-playground-gw2y5h"
+  resource_group_name = "rg-${local.project_name}"
+}
+
+data "azurerm_servicebus_queue" "example" {
+  name         = "sbq-${local.project_name}"
+  namespace_id = data.azurerm_servicebus_namespace.main.id
+}
+
+data "azurerm_user_assigned_identity" "backend" {
+  name                = "id-${local.project_name}-backend"
+  resource_group_name = "rg-${local.project_name}"
+}
