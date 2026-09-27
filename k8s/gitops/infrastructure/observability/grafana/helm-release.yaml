@@ -27,7 +27,7 @@ spec:
         datasources:
           - name: Prometheus
             type: prometheus
-            url: http://prometheus-server.observability.svc.cluster.local
+            url: http://thanos-query.observability.svc.cluster.local:10902
             isDefault: true
           - name: Loki
             type: loki

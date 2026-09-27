@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thanos-store
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: thanos-store
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: thanos-store
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: thanos
+      containers:
+        - name: thanos-store
+          image: quay.io/thanos/thanos:v0.42.4
+          args:
+            - store
+            - --data-dir=/var/thanos/store
+            - --objstore.config-file=/etc/thanos/objstore.yml
+          ports:
+            - name: grpc
+              containerPort: 10901
+            - name: http
+              containerPort: 10902
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: http
+          volumeMounts:
+            - name: data
+              mountPath: /var/thanos/store
+            - name: objstore
+              mountPath: /etc/thanos
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        # Index-header cache only; rebuilt from blob on restart.
+        - name: data
+          emptyDir: {}
+        - name: objstore
+          configMap:
+            name: thanos-objstore
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thanos-store
+  namespace: observability
+spec:
+  selector:
+    app.kubernetes.io/name: thanos-store
+  ports:
+    - name: grpc
+      port: 10901
+      targetPort: grpc

@@ -28,6 +28,10 @@ spec:
     timeout: 10m
     cleanupOnFail: false
   values:
+    serviceAccounts:
+      server:
+        annotations:
+          azure.workload.identity/client-id: ${ID_THANOS}
     alertmanager:
       enabled: false
     prometheus-pushgateway:
@@ -38,16 +42,55 @@ spec:
       enabled: false
     server:
       fullnameOverride: prometheus-server
-      retention: "15d"
+      # Long-term history lives in blob via the Thanos sidecar.
+      retention: "2d"
+      podLabels:
+        azure.workload.identity/use: "true"
+      global:
+        external_labels:
+          cluster: playground
       persistentVolume:
         enabled: true
         storageClass: managed-csi
         size: 20Gi
       service:
         type: ClusterIP
+        gRPC:
+          enabled: true
       extraFlags:
         - web.enable-lifecycle
         - web.enable-remote-write-receiver
+        # Thanos sidecar: reads external labels via admin API; equal block durations disable local compaction.
+        - web.enable-admin-api
+        - storage.tsdb.min-block-duration=2h
+        - storage.tsdb.max-block-duration=2h
+      extraVolumes:
+        - name: thanos-objstore
+          configMap:
+            name: thanos-objstore
+      sidecarContainers:
+        thanos-sidecar:
+          image: quay.io/thanos/thanos:v0.42.4
+          args:
+            - sidecar
+            - --tsdb.path=/data
+            - --prometheus.url=http://localhost:9090
+            - --objstore.config-file=/etc/thanos/objstore.yml
+          ports:
+            - name: grpc
+              containerPort: 10901
+          volumeMounts:
+            - name: storage-volume
+              mountPath: /data
+            - name: thanos-objstore
+              mountPath: /etc/thanos
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
       resources:
         requests:
           cpu: 100m

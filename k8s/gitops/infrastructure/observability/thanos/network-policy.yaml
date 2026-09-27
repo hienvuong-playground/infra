@@ -1,0 +1,39 @@
+# thanos-query-ingress: default-deny ingress on Thanos Query, allowing only
+#                       Grafana (datasource queries).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: thanos-query-ingress
+  namespace: observability
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: thanos-query
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: grafana
+      toPorts:
+        - ports:
+            - port: "10902"
+              protocol: TCP
+---
+# thanos-store-ingress: default-deny ingress on the Store Gateway, allowing
+#                       only Thanos Query (StoreAPI gRPC).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: thanos-store-ingress
+  namespace: observability
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: thanos-store
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: thanos-query
+      toPorts:
+        - ports:
+            - port: "10901"
+              protocol: TCP

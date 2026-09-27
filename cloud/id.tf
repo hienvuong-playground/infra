@@ -137,3 +137,32 @@ resource "azurerm_role_assignment" "tempo_traces_blob_contributor" {
   role_definition_name = "Storage Blob Data Contributor"
   scope                = azurerm_storage_container.tempo_traces.id
 }
+
+resource "azurerm_user_assigned_identity" "thanos" {
+  location            = azurerm_resource_group.main.location
+  name                = "id-${local.project_name}-thanos"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+# The sidecar runs inside the Prometheus pod, so it uses Prometheus's SA.
+resource "azurerm_federated_identity_credential" "thanos_sidecar" {
+  name                      = "fed-thanos-sidecar"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.thanos.id
+  subject                   = "system:serviceaccount:observability:prometheus-server"
+}
+
+resource "azurerm_federated_identity_credential" "thanos" {
+  name                      = "fed-thanos"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.thanos.id
+  subject                   = "system:serviceaccount:observability:thanos"
+}
+
+resource "azurerm_role_assignment" "thanos_metrics_blob_contributor" {
+  principal_id         = azurerm_user_assigned_identity.thanos.principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_container.thanos_metrics.id
+}

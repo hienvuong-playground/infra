@@ -52,14 +52,15 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
 
     post_build {
       substitute = {
-        RG_MANUAL = data.azurerm_resource_group.manual.name
-        DOMAIN_NAME = data.azurerm_dns_zone.dns_zone.name
-        AZURE_SUBSCRIPTION_ID = data.azurerm_client_config.current.subscription_id
-        MI_CERT_MANAGER = data.azurerm_user_assigned_identity.cert_manager.client_id
-        GATEWAY_PIP_NAME = data.azurerm_public_ip.gateway.name
-        RG_MAIN = data.azurerm_public_ip.gateway.resource_group_name
-        ID_LOKI = data.azurerm_user_assigned_identity.loki.client_id
-        ID_TEMPO = data.azurerm_user_assigned_identity.tempo.client_id
+        RG_MANUAL                     = data.azurerm_resource_group.manual.name
+        DOMAIN_NAME                   = data.azurerm_dns_zone.dns_zone.name
+        AZURE_SUBSCRIPTION_ID         = data.azurerm_client_config.current.subscription_id
+        MI_CERT_MANAGER               = data.azurerm_user_assigned_identity.cert_manager.client_id
+        GATEWAY_PIP_NAME              = data.azurerm_public_ip.gateway.name
+        RG_MAIN                       = data.azurerm_public_ip.gateway.resource_group_name
+        ID_LOKI                       = data.azurerm_user_assigned_identity.loki.client_id
+        ID_TEMPO                      = data.azurerm_user_assigned_identity.tempo.client_id
+        ID_THANOS                     = data.azurerm_user_assigned_identity.thanos.client_id
         OBSERVABILITY_STORAGE_ACCOUNT = data.azurerm_storage_account.observability.name
       }
     }
@@ -83,18 +84,18 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
   }
 
   kustomizations {
-    name = "backend"
-    path = "./deploy"
+    name                       = "backend"
+    path                       = "./deploy"
     garbage_collection_enabled = true
     post_build {
       substitute = {
-        ID_KEDA_BACKEND = data.azurerm_user_assigned_identity.keda_backend.client_id
+        ID_KEDA_BACKEND       = data.azurerm_user_assigned_identity.keda_backend.client_id
         SERVICE_BUS_NAMESPACE = data.azurerm_servicebus_namespace.main.name
-        SERVICE_BUS_QUEUE = data.azurerm_servicebus_queue.example.name
-        SERVICE_BUS_HOSTNAME = "${data.azurerm_servicebus_namespace.main.name}.servicebus.windows.net"
-        ID_BACKEND = data.azurerm_user_assigned_identity.backend.client_id
-        AZURE_TENANT_ID = data.azurerm_client_config.current.tenant_id
-        DOMAIN_NAME = data.azurerm_dns_zone.dns_zone.name
+        SERVICE_BUS_QUEUE     = data.azurerm_servicebus_queue.example.name
+        SERVICE_BUS_HOSTNAME  = "${data.azurerm_servicebus_namespace.main.name}.servicebus.windows.net"
+        ID_BACKEND            = data.azurerm_user_assigned_identity.backend.client_id
+        AZURE_TENANT_ID       = data.azurerm_client_config.current.tenant_id
+        DOMAIN_NAME           = data.azurerm_dns_zone.dns_zone.name
       }
     }
   }

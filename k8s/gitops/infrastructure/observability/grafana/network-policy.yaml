@@ -1,5 +1,5 @@
 # grafana-egress: default-deny egress on Grafana, allowing only DNS and
-#                 queries to the Prometheus, Loki and Tempo datasources.
+#                 queries to the Thanos Query (Prometheus-type), Loki and Tempo datasources.
 #
 # NOTE: Cilium enforces on the destination *pod* port, not the Service port
 # (e.g. Prometheus Service :80 → pod :9090).
@@ -13,7 +13,7 @@ spec:
     matchLabels:
       app.kubernetes.io/name: grafana
   egress:
-    # DNS resolution (CoreDNS) — required to resolve prometheus-server.svc
+    # DNS resolution (CoreDNS) — required to resolve datasource Services
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: kube-system
@@ -24,13 +24,13 @@ spec:
               protocol: UDP
             - port: "53"
               protocol: TCP
-    # Prometheus datasource queries
+    # Prometheus datasource queries (served by Thanos Query)
     - toEndpoints:
         - matchLabels:
-            app.kubernetes.io/name: prometheus
+            app.kubernetes.io/name: thanos-query
       toPorts:
         - ports:
-            - port: "9090"
+            - port: "10902"
               protocol: TCP
     # Loki datasource queries
     - toEndpoints:

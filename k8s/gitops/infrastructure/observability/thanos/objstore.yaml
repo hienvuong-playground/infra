@@ -1,0 +1,12 @@
+# No key: objstore falls back to DefaultAzureCredential, which picks up workload identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thanos-objstore
+  namespace: observability
+data:
+  objstore.yml: |
+    type: AZURE
+    config:
+      storage_account: ${OBSERVABILITY_STORAGE_ACCOUNT}
+      container: thanos-metrics
