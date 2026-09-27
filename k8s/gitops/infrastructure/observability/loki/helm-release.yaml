@@ -23,6 +23,12 @@ spec:
         azure.workload.identity/use: "true"
       commonConfig:
         replication_factor: 1
+      # Retention is enforced by the compactor (runs inside the single binary).
+      compactor:
+        retention_enabled: true
+        delete_request_store: azure
+      limits_config:
+        retention_period: 720h
       schemaConfig:
         configs:
           - from: "2026-09-01"
