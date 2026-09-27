@@ -16,6 +16,10 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 3.2.1"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.12.0"
+    }
   }
 
   backend "azurerm" {
@@ -26,6 +30,8 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
+provider "azapi" {}
 
 provider "github" {
   owner = "hienvuong-playground"

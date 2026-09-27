@@ -3,13 +3,29 @@ kind: OpenTelemetryCollector
 metadata:
   name: otel
   namespace: observability
+  labels:
+    azure.workload.identity/use: "true"
 spec:
+  serviceAccount: otel-collector
   config:
     receivers:
       otlp:
         protocols:
           grpc: {}
           http: {}
+    extensions:
+      # $$ escapes Flux postBuild substitution; the collector expands these
+      # from env vars injected by the workload identity webhook.
+      azure_auth:
+        workload_identity:
+          client_id: $${env:AZURE_CLIENT_ID}
+          tenant_id: $${env:AZURE_TENANT_ID}
+          federated_token_file: $${env:AZURE_FEDERATED_TOKEN_FILE}
+        scopes:
+          - https://monitor.azure.com/.default
+    processors:
+      batch: {}
+      cumulativetodelta: {}
     exporters:
       prometheusremotewrite:
         endpoint: http://prometheus-server.observability.svc.cluster.local/api/v1/write
@@ -20,14 +36,29 @@ spec:
         endpoint: tempo.observability.svc.cluster.local:4317
         tls:
           insecure: true
+      otlphttp/azuremonitor:
+        traces_endpoint: ${AZMON_OTLP_TRACES_ENDPOINT}
+        logs_endpoint: ${AZMON_OTLP_LOGS_ENDPOINT}
+        metrics_endpoint: ${AZMON_OTLP_METRICS_ENDPOINT}
+        auth:
+          authenticator: azure_auth
     service:
+      extensions: [azure_auth]
       pipelines:
         metrics:
           receivers: [otlp]
           exporters: [prometheusremotewrite]
+        # Separate pipeline: App Insights needs delta temporality, but
+        # Prometheus remote-write needs cumulative.
+        metrics/azure:
+          receivers: [otlp]
+          processors: [cumulativetodelta, batch]
+          exporters: [otlphttp/azuremonitor]
         logs:
           receivers: [otlp]
-          exporters: [otlphttp/loki]
+          processors: [batch]
+          exporters: [otlphttp/loki, otlphttp/azuremonitor]
         traces:
           receivers: [otlp]
-          exporters: [otlp/tempo]
+          processors: [batch]
+          exporters: [otlp/tempo, otlphttp/azuremonitor]

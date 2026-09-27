@@ -4,22 +4,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 5.0.1"
     }
-    # tls = {
-    #   source  = "hashicorp/tls"
-    #   version = "~> 4.4.1"
-    # }
-    # github = {
-    #   source  = "integrations/github"
-    #   version = "~> 6.13.0"
-    # }
-    # kubernetes = {
-    #   source  = "hashicorp/kubernetes"
-    #   version = "~> 3.2.1"
-    # }
-    # helm = {
-    #   source  = "hashicorp/helm"
-    #   version = "~> 3.3.0"
-    # }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.12.0"
+    }
   }
 
   backend "azurerm" {
@@ -30,6 +18,8 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
+provider "azapi" {}
 
 # provider "github" {
 #   owner = "hienvuong-playground"

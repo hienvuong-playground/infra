@@ -62,6 +62,10 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
         ID_TEMPO                      = data.azurerm_user_assigned_identity.tempo.client_id
         ID_THANOS                     = data.azurerm_user_assigned_identity.thanos.client_id
         OBSERVABILITY_STORAGE_ACCOUNT = data.azurerm_storage_account.observability.name
+        ID_OTEL_COLLECTOR             = data.azurerm_user_assigned_identity.otel_collector.client_id
+        AZMON_OTLP_TRACES_ENDPOINT    = local.azmon_otlp_traces_endpoint
+        AZMON_OTLP_LOGS_ENDPOINT      = local.azmon_otlp_logs_endpoint
+        AZMON_OTLP_METRICS_ENDPOINT   = local.azmon_otlp_metrics_endpoint
       }
     }
   }

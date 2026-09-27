@@ -56,3 +56,25 @@ data "azurerm_storage_account" "observability" {
   name                = "st${local.project_name}obs"
   resource_group_name = "rg-${local.project_name}"
 }
+data "azurerm_user_assigned_identity" "otel_collector" {
+  name                = "id-${local.project_name}-otel-collector"
+  resource_group_name = "rg-${local.project_name}"
+}
+
+data "azurerm_resource_group" "main" {
+  name = "rg-${local.project_name}"
+}
+
+data "azapi_resource" "otlp_dce" {
+  type                   = "Microsoft.Insights/dataCollectionEndpoints@2024-03-11"
+  name                   = "dce-${local.project_name}-otlp"
+  parent_id              = data.azurerm_resource_group.main.id
+  response_export_values = ["properties.logsIngestion.endpoint", "properties.metricsIngestion.endpoint"]
+}
+
+data "azapi_resource" "otlp_dcr" {
+  type                   = "Microsoft.Insights/dataCollectionRules@2024-03-11"
+  name                   = "dcr-${local.project_name}-otlp"
+  parent_id              = data.azurerm_resource_group.main.id
+  response_export_values = ["properties.immutableId"]
+}
