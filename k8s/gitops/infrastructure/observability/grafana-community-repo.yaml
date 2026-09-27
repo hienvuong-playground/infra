@@ -1,4 +1,4 @@
-# Shared by the grafana and loki HelmReleases.
+# Shared by the grafana, loki and tempo HelmReleases.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:

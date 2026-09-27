@@ -42,6 +42,11 @@ data "azurerm_user_assigned_identity" "loki" {
   resource_group_name = "rg-${local.project_name}"
 }
 
+data "azurerm_user_assigned_identity" "tempo" {
+  name                = "id-${local.project_name}-tempo"
+  resource_group_name = "rg-${local.project_name}"
+}
+
 data "azurerm_storage_account" "observability" {
   name                = "st${local.project_name}obs"
   resource_group_name = "rg-${local.project_name}"

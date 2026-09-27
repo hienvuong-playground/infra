@@ -1,4 +1,4 @@
-# Shared blob storage for observability backends (Loki now; traces/metrics later).
+# Shared blob storage for observability backends (Loki logs, Tempo traces).
 # Containers are prefixed per tool so each identity can be scoped to its own.
 resource "azurerm_storage_account" "observability" {
   name                      = "st${local.project_name}obs"
@@ -16,5 +16,10 @@ resource "azurerm_storage_container" "loki_chunks" {
 
 resource "azurerm_storage_container" "loki_ruler" {
   name               = "loki-ruler"
+  storage_account_id = azurerm_storage_account.observability.id
+}
+
+resource "azurerm_storage_container" "tempo_traces" {
+  name               = "tempo-traces"
   storage_account_id = azurerm_storage_account.observability.id
 }

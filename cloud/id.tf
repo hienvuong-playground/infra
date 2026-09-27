@@ -117,3 +117,23 @@ resource "azurerm_role_assignment" "loki_ruler_blob_contributor" {
   role_definition_name = "Storage Blob Data Contributor"
   scope                = azurerm_storage_container.loki_ruler.id
 }
+
+resource "azurerm_user_assigned_identity" "tempo" {
+  location            = azurerm_resource_group.main.location
+  name                = "id-${local.project_name}-tempo"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_federated_identity_credential" "tempo" {
+  name                      = "fed-tempo"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.tempo.id
+  subject                   = "system:serviceaccount:observability:tempo"
+}
+
+resource "azurerm_role_assignment" "tempo_traces_blob_contributor" {
+  principal_id         = azurerm_user_assigned_identity.tempo.principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_container.tempo_traces.id
+}

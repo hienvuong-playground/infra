@@ -59,6 +59,7 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
         GATEWAY_PIP_NAME = data.azurerm_public_ip.gateway.name
         RG_MAIN = data.azurerm_public_ip.gateway.resource_group_name
         ID_LOKI = data.azurerm_user_assigned_identity.loki.client_id
+        ID_TEMPO = data.azurerm_user_assigned_identity.tempo.client_id
         OBSERVABILITY_STORAGE_ACCOUNT = data.azurerm_storage_account.observability.name
       }
     }

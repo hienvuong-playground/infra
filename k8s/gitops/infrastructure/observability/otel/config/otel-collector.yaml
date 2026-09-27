@@ -16,6 +16,10 @@ spec:
       # Loki's native OTLP ingest (exporter appends /v1/logs)
       otlphttp/loki:
         endpoint: http://loki.observability.svc.cluster.local:3100/otlp
+      otlp/tempo:
+        endpoint: tempo.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
     service:
       pipelines:
         metrics:
@@ -24,3 +28,6 @@ spec:
         logs:
           receivers: [otlp]
           exporters: [otlphttp/loki]
+        traces:
+          receivers: [otlp]
+          exporters: [otlp/tempo]

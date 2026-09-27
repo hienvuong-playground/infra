@@ -1,5 +1,5 @@
 # grafana-egress: default-deny egress on Grafana, allowing only DNS and
-#                 queries to the Prometheus and Loki datasources.
+#                 queries to the Prometheus, Loki and Tempo datasources.
 #
 # NOTE: Cilium enforces on the destination *pod* port, not the Service port
 # (e.g. Prometheus Service :80 → pod :9090).
@@ -39,4 +39,11 @@ spec:
       toPorts:
         - ports:
             - port: "3100"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: tempo
+      toPorts:
+        - ports:
+            - port: "3200"
               protocol: TCP
