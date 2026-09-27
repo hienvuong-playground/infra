@@ -9,8 +9,26 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      terraform: ${{ steps.filter.outputs.terraform }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            terraform:
+              - 'cloud/**'
+              - 'k8s/terraform/**'
+              - 'terraform-backend/**'
+
   terraform-cloud:
     runs-on: ubuntu-24.04
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true'
     defaults:
       run:
         working-directory: cloud
