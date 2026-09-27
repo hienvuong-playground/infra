@@ -33,3 +33,11 @@ spec:
     kind: GitRepository
     name: flux-config
     namespace: flux-system
+  # Child Kustomizations don't inherit the parent's substitutions; these
+  # values are filled in by flux-config-cluster when it applies this file.
+  postBuild:
+    substitute:
+      ID_OTEL_COLLECTOR: ${ID_OTEL_COLLECTOR}
+      AZMON_OTLP_TRACES_ENDPOINT: ${AZMON_OTLP_TRACES_ENDPOINT}
+      AZMON_OTLP_LOGS_ENDPOINT: ${AZMON_OTLP_LOGS_ENDPOINT}
+      AZMON_OTLP_METRICS_ENDPOINT: ${AZMON_OTLP_METRICS_ENDPOINT}
