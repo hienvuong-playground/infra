@@ -13,8 +13,14 @@ spec:
     exporters:
       prometheusremotewrite:
         endpoint: http://prometheus-server.observability.svc.cluster.local/api/v1/write
+      # Loki's native OTLP ingest (exporter appends /v1/logs)
+      otlphttp/loki:
+        endpoint: http://loki.observability.svc.cluster.local:3100/otlp
     service:
       pipelines:
         metrics:
           receivers: [otlp]
           exporters: [prometheusremotewrite]
+        logs:
+          receivers: [otlp]
+          exporters: [otlphttp/loki]

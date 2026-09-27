@@ -36,3 +36,13 @@ data "azurerm_dns_zone" "dns_zone" {
   name                = "playground.hienvuong.com"
   resource_group_name = data.azurerm_resource_group.manual.name
 }
+
+data "azurerm_user_assigned_identity" "loki" {
+  name                = "id-${local.project_name}-loki"
+  resource_group_name = "rg-${local.project_name}"
+}
+
+data "azurerm_storage_account" "observability" {
+  name                = "st${local.project_name}obs"
+  resource_group_name = "rg-${local.project_name}"
+}

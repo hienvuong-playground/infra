@@ -90,3 +90,30 @@ resource "azurerm_role_assignment" "cert_manager_dns_zone_contributor" {
   role_definition_name = "DNS Zone Contributor"
   scope                = data.azurerm_dns_zone.dns_zone.id
 }
+
+resource "azurerm_user_assigned_identity" "loki" {
+  location            = azurerm_resource_group.main.location
+  name                = "id-${local.project_name}-loki"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_federated_identity_credential" "loki" {
+  name                      = "fed-loki"
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.main.oidc_issuer_url
+  user_assigned_identity_id = azurerm_user_assigned_identity.loki.id
+  subject                   = "system:serviceaccount:observability:loki"
+}
+
+# Scoped per container (not the account) so Loki can't touch other tools' data.
+resource "azurerm_role_assignment" "loki_chunks_blob_contributor" {
+  principal_id         = azurerm_user_assigned_identity.loki.principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_container.loki_chunks.id
+}
+
+resource "azurerm_role_assignment" "loki_ruler_blob_contributor" {
+  principal_id         = azurerm_user_assigned_identity.loki.principal_id
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_container.loki_ruler.id
+}

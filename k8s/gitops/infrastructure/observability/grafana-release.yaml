@@ -45,3 +45,6 @@ spec:
             type: prometheus
             url: http://prometheus-server.observability.svc.cluster.local
             isDefault: true
+          - name: Loki
+            type: loki
+            url: http://loki.observability.svc.cluster.local:3100

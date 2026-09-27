@@ -1,10 +1,12 @@
 # Step 1 of network segmentation for the observability namespace.
 #
 # grafana-egress:     default-deny egress on Grafana, allowing only DNS and
-#                     queries to the Prometheus datasource.
+#                     queries to the Prometheus and Loki datasources.
 # prometheus-ingress: default-deny ingress on Prometheus, allowing only Grafana
 #                     (datasource queries), the OTEL Collector (remote-write),
 #                     and KEDA (ScaledObject metric queries).
+# loki-ingress:       default-deny ingress on Loki, allowing only Grafana
+#                     (datasource queries) and the OTEL Collector (OTLP log push).
 #
 # NOTE: Grafana reaches Prometheus via the Service on port 80, but Cilium
 # enforces on the destination *pod* port, which is 9090 (the prometheus-server
@@ -38,6 +40,14 @@ spec:
         - ports:
             - port: "9090"
               protocol: TCP
+    # Loki datasource queries
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: loki
+      toPorts:
+        - ports:
+            - port: "3100"
+              protocol: TCP
 ---
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -65,4 +75,26 @@ spec:
       toPorts:
         - ports:
             - port: "9090"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: loki-ingress
+  namespace: observability
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+  ingress:
+    - fromEndpoints:
+        # Grafana datasource queries
+        - matchLabels:
+            app.kubernetes.io/name: grafana
+        # OTEL Collector OTLP log push (/otlp/v1/logs)
+        - matchLabels:
+            app.kubernetes.io/name: otel-collector
+      toPorts:
+        - ports:
+            - port: "3100"
               protocol: TCP
