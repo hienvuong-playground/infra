@@ -7,6 +7,11 @@ data "azurerm_user_assigned_identity" "keda_backend" {
   resource_group_name = "rg-${local.project_name}"
 }
 
+data "azurerm_key_vault" "main" {
+  name                = "kv-playground-gw2y5h"
+  resource_group_name = "rg-${local.project_name}"
+}
+
 data "azurerm_servicebus_namespace" "main" {
   name                = "sbns-playground-gw2y5h"
   resource_group_name = "rg-${local.project_name}"
