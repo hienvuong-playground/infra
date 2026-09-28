@@ -20,6 +20,10 @@ terraform {
       source  = "Azure/azapi"
       version = "~> 2.12.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 3.10.0"
+    }
   }
 
   backend "azurerm" {
@@ -32,6 +36,8 @@ provider "azurerm" {
 }
 
 provider "azapi" {}
+
+provider "azuread" {}
 
 provider "github" {
   owner = "hienvuong-playground"

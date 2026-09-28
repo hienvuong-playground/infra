@@ -55,6 +55,8 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
         RG_MANUAL                     = data.azurerm_resource_group.manual.name
         DOMAIN_NAME                   = data.azurerm_dns_zone.dns_zone.name
         AZURE_SUBSCRIPTION_ID         = data.azurerm_client_config.current.subscription_id
+        AZURE_TENANT_ID               = data.azurerm_client_config.current.tenant_id
+        ID_GRAFANA_OAUTH2_PROXY       = data.azuread_application.grafana.client_id
         MI_CERT_MANAGER               = data.azurerm_user_assigned_identity.cert_manager.client_id
         GATEWAY_PIP_NAME              = data.azurerm_public_ip.gateway.name
         RG_MAIN                       = data.azurerm_public_ip.gateway.resource_group_name

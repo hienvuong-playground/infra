@@ -47,3 +47,22 @@ spec:
         - ports:
             - port: "3200"
               protocol: TCP
+---
+# grafana-ingress: auth.proxy trusts X-Forwarded-Email, so only the oauth2-proxy may reach Grafana.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: grafana-ingress
+  namespace: observability
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/instance: grafana-oauth2-proxy
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP

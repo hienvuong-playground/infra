@@ -1,3 +1,7 @@
+data "azuread_application" "grafana" {
+  display_name = "app-${local.project_name}-grafana"
+}
+
 data "azurerm_user_assigned_identity" "keda_backend" {
   name                = "id-${local.project_name}-keda-backend"
   resource_group_name = "rg-${local.project_name}"

@@ -16,7 +16,11 @@ spec:
         name: grafana-community
         namespace: flux-system
   values:
-    adminPassword: admin
+    grafana.ini:
+      auth.proxy:
+        enabled: true
+        header_name: X-Forwarded-Email
+        header_property: email
     persistence:
       enabled: true
       storageClassName: managed-csi
