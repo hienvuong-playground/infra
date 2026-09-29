@@ -12,5 +12,5 @@ spec:
     - "grafana.${DOMAIN_NAME}"
   rules:
     - backendRefs:
-        - name: grafana-oauth2-proxy
+        - name: observability-grafana
           port: 80

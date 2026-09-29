@@ -16,11 +16,24 @@ spec:
         name: grafana-community
         namespace: flux-system
   values:
+    serviceAccount:
+      annotations:
+        azure.workload.identity/client-id: ${ID_GRAFANA}
+    podLabels:
+      azure.workload.identity/use: "true"
     grafana.ini:
-      auth.proxy:
+      server:
+        root_url: https://grafana.${DOMAIN_NAME}
+      auth.azuread:
         enabled: true
-        header_name: X-Forwarded-Email
-        header_property: email
+        auto_login: true
+        client_id: ${ID_GRAFANA}
+        client_authentication: workload_identity
+        federated_credential_audience: api://AzureADTokenExchange
+        auth_url: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/authorize
+        token_url: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token
+        allowed_organizations: ${AZURE_TENANT_ID}
+        org_mapping: ${GRAFANA_ADMINS_GROUP_ID}:1:Admin ${GRAFANA_DEVELOPERS_GROUP_ID}:1:Editor
     persistence:
       enabled: true
       storageClassName: managed-csi

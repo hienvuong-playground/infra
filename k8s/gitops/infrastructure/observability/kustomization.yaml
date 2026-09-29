@@ -6,7 +6,6 @@ resources:
   - grafana-community-repo.yaml
   - prometheus
   - grafana
-  - grafana-oauth2-proxy
   - loki
   - tempo
   - thanos

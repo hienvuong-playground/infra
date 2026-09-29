@@ -8,6 +8,7 @@ This repository contains Terraform configuration for the playground environment 
 - `Owner` and `Storage Blob Data Contributor` roles on the target Azure subscription.
   - `Owner` to create role assignments
   - `Storage Blob Data Contributor` to write the state of the bootstrap to storage
+- `User Administrator` entra role
 
 ## Structure
 

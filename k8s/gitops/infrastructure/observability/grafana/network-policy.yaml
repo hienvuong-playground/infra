@@ -1,4 +1,4 @@
-# grafana-egress: default-deny egress on Grafana, allowing only DNS and
+# grafana-egress: default-deny egress on Grafana, allowing only DNS, Entra ID and
 #                 queries to the Thanos Query (Prometheus-type), Loki and Tempo datasources.
 #
 # NOTE: Cilium enforces on the destination *pod* port, not the Service port
@@ -47,22 +47,10 @@ spec:
         - ports:
             - port: "3200"
               protocol: TCP
----
-# grafana-ingress: auth.proxy trusts X-Forwarded-Email, so only the oauth2-proxy may reach Grafana.
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: grafana-ingress
-  namespace: observability
-spec:
-  endpointSelector:
-    matchLabels:
-      app.kubernetes.io/name: grafana
-  ingress:
-    - fromEndpoints:
-        - matchLabels:
-            app.kubernetes.io/instance: grafana-oauth2-proxy
+    # Entra ID login/token endpoints; toFQDNs needs ACNS security, which is disabled.
+    - toEntities:
+        - world
       toPorts:
         - ports:
-            - port: "3000"
+            - port: "443"
               protocol: TCP
