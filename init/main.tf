@@ -63,6 +63,15 @@ resource "azurerm_role_assignment" "storage_blob_data_contributor" {
   scope                = azurerm_storage_account.main.id
 }
 
+resource "azuread_directory_role" "application_administrator" {
+  display_name = "Application Administrator"
+}
+
+resource "azuread_directory_role_assignment" "application_administrator" {
+  role_id             = azuread_directory_role.application_administrator.template_id
+  principal_object_id = azurerm_user_assigned_identity.main.principal_id
+}
+
 resource "github_actions_organization_variable" "client_id" {
   variable_name = "AZURE_CLIENT_ID"
   visibility    = "all"
