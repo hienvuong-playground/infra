@@ -30,6 +30,7 @@ resource "azurerm_key_vault_secret" "grafana_oauth2_proxy_cookie_secret" {
   name         = "grafana-oauth2-proxy-cookie-secret"
   value        = random_password.grafana_oauth2_proxy_cookie_secret.result
   key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [azurerm_role_assignment.current_user_kv_admin]
 }
 
 resource "azurerm_role_assignment" "grafana_oauth2_proxy_cookie_secret_user" {
