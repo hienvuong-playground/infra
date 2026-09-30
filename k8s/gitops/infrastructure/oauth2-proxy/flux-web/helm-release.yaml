@@ -22,7 +22,7 @@ spec:
       requiredSecretKeys:
         - cookie-secret
       upstreams:
-        - http://flux-web.flux-system.svc.cluster.local:9080
+        - http://flux-web-flux-operator.flux-system.svc.cluster.local:9080
     extraArgs:
       provider: entra-id
       client-id: ${ID_OAUTH2_PROXY}

@@ -15,6 +15,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
+  releaseName: flux-web
   targetNamespace: flux-system
   storageNamespace: flux-system
   chart:
@@ -26,7 +27,6 @@ spec:
         name: flux-operator
         namespace: flux-system
   values:
-    fullnameOverride: flux-web
     web:
       serverOnly: true
       # Chart policy allows 9080 from every namespace; Cilium allow rules are additive, so it would bypass the proxy.
