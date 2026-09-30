@@ -59,6 +59,8 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
         ID_GRAFANA                    = data.azuread_application.grafana.client_id
         GRAFANA_ADMINS_GROUP_ID       = data.azuread_group.grafana_admins.object_id
         GRAFANA_DEVELOPERS_GROUP_ID   = data.azuread_group.grafana_developers.object_id
+        ID_OAUTH2_PROXY               = data.azuread_application.oauth2_proxy.client_id
+        KEYVAULT_NAME                 = data.azurerm_key_vault.main.name
         MI_CERT_MANAGER               = data.azurerm_user_assigned_identity.cert_manager.client_id
         GATEWAY_PIP_NAME              = data.azurerm_public_ip.gateway.name
         RG_MAIN                       = data.azurerm_public_ip.gateway.resource_group_name

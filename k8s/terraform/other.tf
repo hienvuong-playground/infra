@@ -2,6 +2,10 @@ data "azuread_application" "grafana" {
   display_name = "app-${local.project_name}-grafana"
 }
 
+data "azuread_application" "oauth2_proxy" {
+  display_name = "app-${local.project_name}-oauth2-proxy"
+}
+
 data "azuread_group" "grafana_admins" {
   display_name = "DevOps Engineers"
 }

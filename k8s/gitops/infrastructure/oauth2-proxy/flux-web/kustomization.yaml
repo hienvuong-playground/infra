@@ -3,5 +3,5 @@ kind: Kustomization
 
 resources:
   - helm-release.yaml
-  - role.yaml
+  - httproute.yaml
   - network-policy.yaml

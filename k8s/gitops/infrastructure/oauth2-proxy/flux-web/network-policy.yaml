@@ -1,0 +1,18 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: flux-web-oauth2-proxy
+  namespace: oauth2-proxy
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: flux-web-oauth2-proxy
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: flux-system
+            app.kubernetes.io/instance: flux-web
+      toPorts:
+        - ports:
+            - port: "9080"
+              protocol: TCP

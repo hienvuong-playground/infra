@@ -29,6 +29,9 @@ spec:
     fullnameOverride: flux-web
     web:
       serverOnly: true
+      # Chart policy allows 9080 from every namespace; Cilium allow rules are additive, so it would bypass the proxy.
+      networkPolicy:
+        create: false
       config:
         authentication:
           type: Anonymous

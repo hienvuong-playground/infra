@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - flux-ui
+  - oauth2-proxy
   - observability
   - cert-manager
   - gateway-api

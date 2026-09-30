@@ -1,0 +1,19 @@
+# flux-web runs with a shared anonymous admin identity, so only its oauth2-proxy may reach it.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: flux-web
+  namespace: flux-system
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: flux-web
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: oauth2-proxy
+            app.kubernetes.io/instance: flux-web-oauth2-proxy
+      toPorts:
+        - ports:
+            - port: "9080"
+              protocol: TCP
