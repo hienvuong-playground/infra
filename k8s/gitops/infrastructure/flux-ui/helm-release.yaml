@@ -29,4 +29,11 @@ spec:
     fullnameOverride: flux-web
     web:
       serverOnly: true
+      config:
+        authentication:
+          type: Anonymous
+          anonymous:
+            username: flux
+            groups:
+              - flux-admin
     installCRDs: true
