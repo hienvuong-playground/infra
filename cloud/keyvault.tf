@@ -19,7 +19,8 @@ resource "azurerm_role_assignment" "current_user_kv_admin" {
 locals {
   # secret name => principal allowed to read it
   secrets = {
-    "my-secret" = azurerm_user_assigned_identity.backend.principal_id
+    "my-secret"   = azurerm_user_assigned_identity.backend.principal_id
+    "my-secret-2" = azurerm_user_assigned_identity.backend.principal_id
   }
 }
 
