@@ -15,3 +15,27 @@ resource "azurerm_role_assignment" "current_user_kv_admin" {
   role_definition_name = "Key Vault Administrator"
   principal_id         = data.azurerm_client_config.current.object_id
 }
+
+locals {
+  # secret name => principal allowed to read it
+  secrets = {
+    "my-secret" = azurerm_user_assigned_identity.backend.principal_id
+  }
+}
+
+# Real value is set manually in the portal; Terraform never reads it back.
+resource "azurerm_key_vault_secret" "manual" {
+  for_each         = local.secrets
+  name             = each.key
+  value_wo         = "changeme"
+  value_wo_version = 1
+  key_vault_id     = azurerm_key_vault.main.id
+  depends_on       = [azurerm_role_assignment.current_user_kv_admin]
+}
+
+resource "azurerm_role_assignment" "secret_user" {
+  for_each             = local.secrets
+  principal_id         = each.value
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault_secret.manual[each.key].resource_versionless_id
+}

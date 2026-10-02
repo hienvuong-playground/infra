@@ -25,16 +25,17 @@ resource "azuread_application_federated_identity_credential" "oauth2_proxy" {
   subject        = "system:serviceaccount:oauth2-proxy:oauth2-proxy"
 }
 
-resource "random_password" "oauth2_proxy_cookie_secret" {
+ephemeral "random_password" "oauth2_proxy_cookie_secret" {
   length           = 32
   override_special = "-_"
 }
 
 resource "azurerm_key_vault_secret" "oauth2_proxy_cookie_secret" {
-  name         = "oauth2-proxy-cookie-secret"
-  value        = random_password.oauth2_proxy_cookie_secret.result
-  key_vault_id = azurerm_key_vault.main.id
-  depends_on   = [azurerm_role_assignment.current_user_kv_admin]
+  name             = "oauth2-proxy-cookie-secret"
+  value_wo         = ephemeral.random_password.oauth2_proxy_cookie_secret.result
+  value_wo_version = 1
+  key_vault_id     = azurerm_key_vault.main.id
+  depends_on       = [azurerm_role_assignment.current_user_kv_admin]
 }
 
 resource "azurerm_role_assignment" "oauth2_proxy_cookie_secret_user" {

@@ -39,12 +39,6 @@ resource "azurerm_federated_identity_credential" "backend" {
   subject                   = "system:serviceaccount:backend:backend-workload"
 }
 
-resource "azurerm_role_assignment" "backend_secret_user" {
-  principal_id         = azurerm_user_assigned_identity.backend.principal_id
-  role_definition_name = "Key Vault Secrets User"
-  scope                = azurerm_key_vault.main.id
-}
-
 resource "azurerm_role_assignment" "backend_servicebus_data_owner" {
   principal_id         = azurerm_user_assigned_identity.backend.principal_id
   role_definition_name = "Azure Service Bus Data Owner"
