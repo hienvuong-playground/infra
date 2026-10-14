@@ -99,3 +99,8 @@ data "azapi_resource" "otlp_dcr" {
   parent_id              = data.azurerm_resource_group.main.id
   response_export_values = ["properties.immutableId"]
 }
+
+data "azurerm_monitor_workspace" "main" {
+  name                = "amw-${local.project_name}"
+  resource_group_name = data.azurerm_resource_group.main.name
+}

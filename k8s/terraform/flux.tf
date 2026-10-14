@@ -72,6 +72,7 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
         AZMON_OTLP_TRACES_ENDPOINT    = local.azmon_otlp_traces_endpoint
         AZMON_OTLP_LOGS_ENDPOINT      = local.azmon_otlp_logs_endpoint
         AZMON_OTLP_METRICS_ENDPOINT   = local.azmon_otlp_metrics_endpoint
+        AMW_QUERY_ENDPOINT            = data.azurerm_monitor_workspace.main.query_endpoint
       }
     }
   }

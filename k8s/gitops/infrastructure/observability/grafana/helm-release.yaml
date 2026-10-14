@@ -34,6 +34,12 @@ spec:
         token_url: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token
         allowed_organizations: ${AZURE_TENANT_ID}
         org_mapping: ${GRAFANA_ADMINS_GROUP_ID}:1:Admin ${GRAFANA_DEVELOPERS_GROUP_ID}:1:Editor
+      auth:
+        azure_auth_enabled: true
+      azure:
+        workload_identity_enabled: true
+    plugins:
+      - grafana-azureprometheus-datasource
     persistence:
       enabled: true
       storageClassName: managed-csi
@@ -52,3 +58,15 @@ spec:
           - name: Tempo
             type: tempo
             url: http://tempo.observability.svc.cluster.local:3200
+          - name: Azure Monitor
+            type: grafana-azure-monitor-datasource
+            jsonData:
+              azureAuthType: workloadidentity
+              subscriptionId: ${AZURE_SUBSCRIPTION_ID}
+          - name: Azure Managed Prometheus
+            type: grafana-azureprometheus-datasource
+            url: ${AMW_QUERY_ENDPOINT}
+            jsonData:
+              httpMethod: POST
+              azureCredentials:
+                authType: workloadidentity
