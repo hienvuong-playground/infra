@@ -6,6 +6,7 @@ metadata:
   labels:
     azure.workload.identity/use: "true"
 spec:
+  replicas: 2
   serviceAccount: otel-collector
   config:
     receivers:
@@ -26,31 +27,23 @@ spec:
     processors:
       batch: {}
       cumulativetodelta: {}
-      # Keeps every trace with an ERROR span plus ~10% of the rest. Server-side
-      # 4xx is UNSET per HTTP semconv, so those traces fall into the 10%.
-      tail_sampling:
-        decision_wait: 10s
-        policies:
-          - name: errors
-            type: status_code
-            status_code:
-              status_codes: [ERROR]
-          - name: baseline
-            type: probabilistic
-            probabilistic:
-              sampling_percentage: 10
     exporters:
       prometheusremotewrite:
         endpoint: http://prometheus-server.observability.svc.cluster.local/api/v1/write
       # Loki's native OTLP ingest (exporter appends /v1/logs)
       otlphttp/loki:
         endpoint: http://loki.observability.svc.cluster.local:3100/otlp
-      otlp/tempo:
-        endpoint: tempo.observability.svc.cluster.local:4317
-        tls:
-          insecure: true
+      # Tail sampling needs all spans of a trace on one instance, so traces are
+      # routed by trace ID to the otel-tail-sampler tier.
+      load_balancing:
+        protocol:
+          otlp:
+            tls:
+              insecure: true
+        resolver:
+          dns:
+            hostname: otel-tail-sampler-collector-headless.observability.svc.cluster.local
       otlphttp/azuremonitor:
-        traces_endpoint: ${AZMON_OTLP_TRACES_ENDPOINT}
         logs_endpoint: ${AZMON_OTLP_LOGS_ENDPOINT}
         metrics_endpoint: ${AZMON_OTLP_METRICS_ENDPOINT}
         auth:
@@ -73,5 +66,4 @@ spec:
           exporters: [otlphttp/loki, otlphttp/azuremonitor]
         traces:
           receivers: [otlp]
-          processors: [tail_sampling, batch]
-          exporters: [otlp/tempo, otlphttp/azuremonitor]
+          exporters: [load_balancing]

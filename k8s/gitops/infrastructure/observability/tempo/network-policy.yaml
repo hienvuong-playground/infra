@@ -1,5 +1,5 @@
-# tempo-ingress: default-deny ingress on Tempo, allowing only the OTEL Collector
-#                (OTLP gRPC trace push) and Grafana (datasource queries).
+# tempo-ingress: default-deny ingress on Tempo, allowing only the OTEL tail
+#                sampler (OTLP gRPC trace push) and Grafana (datasource queries).
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -10,10 +10,10 @@ spec:
     matchLabels:
       app.kubernetes.io/name: tempo
   ingress:
-    # OTEL Collector OTLP gRPC trace push
+    # OTEL tail sampler OTLP gRPC trace push
     - fromEndpoints:
         - matchLabels:
-            app.kubernetes.io/name: otel-collector
+            app.kubernetes.io/name: otel-tail-sampler-collector
       toPorts:
         - ports:
             - port: "4317"

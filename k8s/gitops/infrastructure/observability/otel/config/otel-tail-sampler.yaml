@@ -1,0 +1,57 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-tail-sampler
+  namespace: observability
+  labels:
+    azure.workload.identity/use: "true"
+spec:
+  # Fixed: changing the replica count reshuffles in-flight traces between pods.
+  replicas: 2
+  serviceAccount: otel-collector
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc: {}
+    extensions:
+      # $$ escapes Flux postBuild substitution; the collector expands these
+      # from env vars injected by the workload identity webhook.
+      azure_auth:
+        workload_identity:
+          client_id: $${env:AZURE_CLIENT_ID}
+          tenant_id: $${env:AZURE_TENANT_ID}
+          federated_token_file: $${env:AZURE_FEDERATED_TOKEN_FILE}
+        scopes:
+          - https://monitor.azure.com/.default
+    processors:
+      batch: {}
+      # Keeps every trace with an ERROR span plus ~10% of the rest. Server-side
+      # 4xx is UNSET per HTTP semconv, so those traces fall into the 10%.
+      tail_sampling:
+        decision_wait: 10s
+        policies:
+          - name: errors
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+          - name: baseline
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 10
+    exporters:
+      otlp/tempo:
+        endpoint: tempo.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+      otlphttp/azuremonitor:
+        traces_endpoint: ${AZMON_OTLP_TRACES_ENDPOINT}
+        auth:
+          authenticator: azure_auth
+    service:
+      extensions: [azure_auth]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [tail_sampling, batch]
+          exporters: [otlp/tempo, otlphttp/azuremonitor]
