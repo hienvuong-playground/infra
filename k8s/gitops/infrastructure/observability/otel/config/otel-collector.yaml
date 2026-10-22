@@ -26,6 +26,19 @@ spec:
     processors:
       batch: {}
       cumulativetodelta: {}
+      # Keeps every trace with an ERROR span plus ~10% of the rest. Server-side
+      # 4xx is UNSET per HTTP semconv, so those traces fall into the 10%.
+      tail_sampling:
+        decision_wait: 10s
+        policies:
+          - name: errors
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+          - name: baseline
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 10
     exporters:
       prometheusremotewrite:
         endpoint: http://prometheus-server.observability.svc.cluster.local/api/v1/write
@@ -60,5 +73,5 @@ spec:
           exporters: [otlphttp/loki, otlphttp/azuremonitor]
         traces:
           receivers: [otlp]
-          processors: [batch]
+          processors: [tail_sampling, batch]
           exporters: [otlp/tempo, otlphttp/azuremonitor]
