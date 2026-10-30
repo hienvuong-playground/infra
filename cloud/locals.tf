@@ -1,6 +1,6 @@
 locals {
-  project_name     = "playground"
-  region           = "westeurope"
+  project_name = "playground"
+  region       = "westeurope"
 }
 
 resource "random_string" "suffix" {

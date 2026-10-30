@@ -1,8 +1,3 @@
-data "azurerm_kubernetes_cluster" "main" {
-  name                = "aks-${local.project_name}"
-  resource_group_name = "rg-${local.project_name}"
-}
-
 resource "tls_private_key" "backend" {
   algorithm = "ED25519"
 }
@@ -16,7 +11,7 @@ resource "github_repository_deploy_key" "backend" {
 
 resource "azurerm_kubernetes_cluster_extension" "main" {
   name           = "flux"
-  cluster_id     = data.azurerm_kubernetes_cluster.main.id
+  cluster_id     = local.cloud.aks_cluster_id
   extension_type = "microsoft.flux"
 }
 
@@ -34,7 +29,7 @@ resource "github_repository_deploy_key" "infra" {
 
 resource "azurerm_kubernetes_flux_configuration" "infra" {
   name       = "flux-config"
-  cluster_id = data.azurerm_kubernetes_cluster.main.id
+  cluster_id = local.cloud.aks_cluster_id
   namespace  = "flux-system"
   scope      = "cluster"
 
@@ -52,27 +47,27 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
 
     post_build {
       substitute = {
-        RG_MANUAL                     = data.azurerm_resource_group.manual.name
-        DOMAIN_NAME                   = data.azurerm_dns_zone.dns_zone.name
+        RG_MANUAL                     = local.cloud.rg_manual_name
+        DOMAIN_NAME                   = local.cloud.domain_name
         AZURE_SUBSCRIPTION_ID         = data.azurerm_client_config.current.subscription_id
         AZURE_TENANT_ID               = data.azurerm_client_config.current.tenant_id
-        ID_GRAFANA                    = data.azuread_application.grafana.client_id
+        ID_GRAFANA                    = local.cloud.grafana_client_id
         GRAFANA_ADMINS_GROUP_ID       = data.azuread_group.grafana_admins.object_id
         GRAFANA_DEVELOPERS_GROUP_ID   = data.azuread_group.grafana_developers.object_id
-        ID_OAUTH2_PROXY               = data.azuread_application.oauth2_proxy.client_id
-        KEYVAULT_NAME                 = data.azurerm_key_vault.main.name
-        MI_CERT_MANAGER               = data.azurerm_user_assigned_identity.cert_manager.client_id
-        GATEWAY_PIP_NAME              = data.azurerm_public_ip.gateway.name
-        RG_MAIN                       = data.azurerm_public_ip.gateway.resource_group_name
-        ID_LOKI                       = data.azurerm_user_assigned_identity.loki.client_id
-        ID_TEMPO                      = data.azurerm_user_assigned_identity.tempo.client_id
-        ID_THANOS                     = data.azurerm_user_assigned_identity.thanos.client_id
-        OBSERVABILITY_STORAGE_ACCOUNT = data.azurerm_storage_account.observability.name
-        ID_OTEL_COLLECTOR             = data.azurerm_user_assigned_identity.otel_collector.client_id
-        AZMON_OTLP_TRACES_ENDPOINT    = local.azmon_otlp_traces_endpoint
-        AZMON_OTLP_LOGS_ENDPOINT      = local.azmon_otlp_logs_endpoint
-        AZMON_OTLP_METRICS_ENDPOINT   = local.azmon_otlp_metrics_endpoint
-        AMW_QUERY_ENDPOINT            = data.azurerm_monitor_workspace.main.query_endpoint
+        ID_OAUTH2_PROXY               = local.cloud.oauth2_proxy_client_id
+        KEYVAULT_NAME                 = local.cloud.key_vault_name
+        MI_CERT_MANAGER               = local.cloud.identity_client_ids.cert_manager
+        GATEWAY_PIP_NAME              = local.cloud.gateway_pip_name
+        RG_MAIN                       = local.cloud.resource_group_name
+        ID_LOKI                       = local.cloud.identity_client_ids.loki
+        ID_TEMPO                      = local.cloud.identity_client_ids.tempo
+        ID_THANOS                     = local.cloud.identity_client_ids.thanos
+        OBSERVABILITY_STORAGE_ACCOUNT = local.cloud.observability_storage_account_name
+        ID_OTEL_COLLECTOR             = local.cloud.identity_client_ids.otel_collector
+        AZMON_OTLP_TRACES_ENDPOINT    = local.cloud.azmon_otlp_traces_endpoint
+        AZMON_OTLP_LOGS_ENDPOINT      = local.cloud.azmon_otlp_logs_endpoint
+        AZMON_OTLP_METRICS_ENDPOINT   = local.cloud.azmon_otlp_metrics_endpoint
+        AMW_QUERY_ENDPOINT            = local.cloud.amw_query_endpoint
       }
     }
   }
@@ -84,7 +79,7 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
 
 resource "azurerm_kubernetes_flux_configuration" "backend" {
   name       = "backend"
-  cluster_id = data.azurerm_kubernetes_cluster.main.id
+  cluster_id = local.cloud.aks_cluster_id
   namespace  = "backend"
 
   git_repository {
@@ -100,14 +95,14 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
     garbage_collection_enabled = true
     post_build {
       substitute = {
-        ID_KEDA_BACKEND       = data.azurerm_user_assigned_identity.keda_backend.client_id
-        SERVICE_BUS_NAMESPACE = data.azurerm_servicebus_namespace.main.name
-        SERVICE_BUS_QUEUE     = data.azurerm_servicebus_queue.example.name
-        SERVICE_BUS_HOSTNAME  = "${data.azurerm_servicebus_namespace.main.name}.servicebus.windows.net"
-        ID_BACKEND            = data.azurerm_user_assigned_identity.backend.client_id
-        KEYVAULT_NAME         = data.azurerm_key_vault.main.name
+        ID_KEDA_BACKEND       = local.cloud.identity_client_ids.keda_backend
+        SERVICE_BUS_NAMESPACE = local.cloud.servicebus_namespace_name
+        SERVICE_BUS_QUEUE     = local.cloud.servicebus_queue_name
+        SERVICE_BUS_HOSTNAME  = "${local.cloud.servicebus_namespace_name}.servicebus.windows.net"
+        ID_BACKEND            = local.cloud.identity_client_ids.backend
+        KEYVAULT_NAME         = local.cloud.key_vault_name
         AZURE_TENANT_ID       = data.azurerm_client_config.current.tenant_id
-        DOMAIN_NAME           = data.azurerm_dns_zone.dns_zone.name
+        DOMAIN_NAME           = local.cloud.domain_name
       }
     }
   }

@@ -16,10 +16,6 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 3.2.1"
     }
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.12.0"
-    }
     azuread = {
       source  = "hashicorp/azuread"
       version = "~> 3.10.0"
@@ -34,8 +30,6 @@ terraform {
 provider "azurerm" {
   features {}
 }
-
-provider "azapi" {}
 
 provider "azuread" {}
 

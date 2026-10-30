@@ -35,6 +35,8 @@ resource "azapi_resource" "otlp_dce" {
       }
     }
   }
+
+  response_export_values = ["properties.logsIngestion.endpoint", "properties.metricsIngestion.endpoint"]
 }
 
 resource "azapi_resource" "otlp_dcr" {
@@ -105,4 +107,14 @@ resource "azapi_resource" "otlp_dcr" {
       ]
     }
   }
+
+  response_export_values = ["properties.immutableId"]
+}
+
+locals {
+  azmon_dcr_path              = "datacollectionRules/${azapi_resource.otlp_dcr.output.properties.immutableId}/streams"
+  azmon_logs_ingestion        = azapi_resource.otlp_dce.output.properties.logsIngestion.endpoint
+  azmon_otlp_traces_endpoint  = "${local.azmon_logs_ingestion}/${local.azmon_dcr_path}/Microsoft-OTLP-Traces/otlp/v1/traces"
+  azmon_otlp_logs_endpoint    = "${local.azmon_logs_ingestion}/${local.azmon_dcr_path}/Microsoft-OTLP-Logs/otlp/v1/logs"
+  azmon_otlp_metrics_endpoint = "${azapi_resource.otlp_dce.output.properties.metricsIngestion.endpoint}/${local.azmon_dcr_path}/Custom-Metrics-Otel/otlp/v1/metrics"
 }
