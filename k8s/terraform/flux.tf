@@ -97,8 +97,6 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
     path                       = "./deploy"
     garbage_collection_enabled = true
     sync_interval_in_seconds   = 60
-    timeout_in_seconds         = 180
-    retry_interval_in_seconds  = 60
     post_build {
       substitute = {
         ID_KEDA_BACKEND       = local.cloud.identity_client_ids.keda_backend
