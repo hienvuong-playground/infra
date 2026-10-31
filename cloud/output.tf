@@ -34,6 +34,22 @@ output "observability_storage_account_name" {
   value = azurerm_storage_account.observability.name
 }
 
+output "static_web_app_host" {
+  value = azurerm_static_web_app.main.default_host_name
+}
+
+output "postgres_fqdn" {
+  value = azurerm_postgresql_flexible_server.main.fqdn
+}
+
+output "postgres_database" {
+  value = azurerm_postgresql_flexible_server_database.storefront.name
+}
+
+output "postgres_user" {
+  value = azurerm_user_assigned_identity.backend.name
+}
+
 output "servicebus_namespace_name" {
   value = azurerm_servicebus_namespace.main.name
 }

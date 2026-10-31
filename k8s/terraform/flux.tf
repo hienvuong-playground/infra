@@ -34,16 +34,18 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
   scope      = "cluster"
 
   git_repository {
-    url                    = "ssh://git@github.com/hienvuong-playground/infra"
-    reference_type         = "branch"
-    reference_value        = "main"
-    ssh_private_key_base64 = base64encode(tls_private_key.infra.private_key_pem)
+    url                      = "ssh://git@github.com/hienvuong-playground/infra"
+    reference_type           = "branch"
+    reference_value          = "main"
+    ssh_private_key_base64   = base64encode(tls_private_key.infra.private_key_pem)
+    sync_interval_in_seconds = 60
   }
 
   kustomizations {
     name                       = "cluster"
     path                       = "./k8s/gitops/clusters"
     garbage_collection_enabled = true
+    sync_interval_in_seconds   = 60
 
     post_build {
       substitute = {
@@ -83,16 +85,18 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
   namespace  = "backend"
 
   git_repository {
-    url                    = "ssh://git@github.com/hienvuong-playground/backend"
-    reference_type         = "branch"
-    reference_value        = "main"
-    ssh_private_key_base64 = base64encode(tls_private_key.backend.private_key_pem)
+    url                      = "ssh://git@github.com/hienvuong-playground/backend"
+    reference_type           = "branch"
+    reference_value          = "main"
+    ssh_private_key_base64   = base64encode(tls_private_key.backend.private_key_pem)
+    sync_interval_in_seconds = 60
   }
 
   kustomizations {
     name                       = "backend"
     path                       = "./deploy"
     garbage_collection_enabled = true
+    sync_interval_in_seconds   = 60
     post_build {
       substitute = {
         ID_KEDA_BACKEND       = local.cloud.identity_client_ids.keda_backend
@@ -103,6 +107,10 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
         KEYVAULT_NAME         = local.cloud.key_vault_name
         AZURE_TENANT_ID       = data.azurerm_client_config.current.tenant_id
         DOMAIN_NAME           = local.cloud.domain_name
+        POSTGRES_HOST         = local.cloud.postgres_fqdn
+        POSTGRES_DB           = local.cloud.postgres_database
+        POSTGRES_USER         = local.cloud.postgres_user
+        STATIC_WEB_APP_HOST   = local.cloud.static_web_app_host
       }
     }
   }
