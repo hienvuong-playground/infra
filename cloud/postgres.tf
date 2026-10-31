@@ -12,6 +12,11 @@ resource "azurerm_postgresql_flexible_server" "main" {
     password_auth_enabled         = false
     tenant_id                     = data.azurerm_client_config.current.tenant_id
   }
+
+  # Azure picks the zone when unset
+  lifecycle {
+    ignore_changes = [zone]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_database" "storefront" {
@@ -34,4 +39,17 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ba
   object_id           = azurerm_user_assigned_identity.backend.principal_id
   principal_name      = azurerm_user_assigned_identity.backend.name
   principal_type      = "ServicePrincipal"
+}
+
+data "azuread_group" "devops" {
+  display_name = "DevOps Engineers"
+}
+
+resource "azurerm_postgresql_flexible_server_active_directory_administrator" "devops" {
+  server_name         = azurerm_postgresql_flexible_server.main.name
+  resource_group_name = azurerm_resource_group.main.name
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  object_id           = data.azuread_group.devops.object_id
+  principal_name      = data.azuread_group.devops.display_name
+  principal_type      = "Group"
 }
