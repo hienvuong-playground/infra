@@ -38,6 +38,10 @@ output "static_web_app_host" {
   value = azurerm_static_web_app.main.default_host_name
 }
 
+output "assets_base_url" {
+  value = azurerm_storage_container.assets.url
+}
+
 output "postgres_fqdn" {
   value = azurerm_postgresql_flexible_server.main.fqdn
 }

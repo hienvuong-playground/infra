@@ -111,6 +111,7 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
         POSTGRES_DB           = local.cloud.postgres_database
         POSTGRES_USER         = local.cloud.postgres_user
         STATIC_WEB_APP_HOST   = local.cloud.static_web_app_host
+        ASSET_BASE_URL        = local.cloud.assets_base_url
       }
     }
   }
