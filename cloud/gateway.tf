@@ -20,3 +20,11 @@ resource "azurerm_dns_a_record" "wildcard" {
   ttl                 = 300
   target_resource_id  = azurerm_public_ip.gateway.id
 }
+
+resource "azurerm_dns_a_record" "apex" {
+  name                = "@"
+  zone_name           = data.azurerm_dns_zone.dns_zone.name
+  resource_group_name = data.azurerm_resource_group.rg_manual.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.gateway.id
+}

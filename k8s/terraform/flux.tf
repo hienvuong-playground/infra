@@ -9,6 +9,17 @@ resource "github_repository_deploy_key" "backend" {
   read_only  = true
 }
 
+resource "tls_private_key" "frontend" {
+  algorithm = "ED25519"
+}
+
+resource "github_repository_deploy_key" "frontend" {
+  title      = "flux-frontend"
+  repository = "frontend"
+  key        = tls_private_key.frontend.public_key_openssh
+  read_only  = true
+}
+
 resource "azurerm_kubernetes_cluster_extension" "main" {
   name           = "flux"
   cluster_id     = local.cloud.aks_cluster_id
@@ -112,6 +123,36 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
         POSTGRES_USER         = local.cloud.postgres_user
         STATIC_WEB_APP_HOST   = local.cloud.static_web_app_host
         ASSET_BASE_URL        = local.cloud.assets_base_url
+      }
+    }
+  }
+
+  depends_on = [
+    azurerm_kubernetes_cluster_extension.main
+  ]
+}
+
+resource "azurerm_kubernetes_flux_configuration" "frontend" {
+  name       = "frontend"
+  cluster_id = local.cloud.aks_cluster_id
+  namespace  = "frontend"
+
+  git_repository {
+    url                      = "ssh://git@github.com/hienvuong-playground/frontend"
+    reference_type           = "branch"
+    reference_value          = "main"
+    ssh_private_key_base64   = base64encode(tls_private_key.frontend.private_key_pem)
+    sync_interval_in_seconds = 60
+  }
+
+  kustomizations {
+    name                       = "frontend"
+    path                       = "./deploy"
+    garbage_collection_enabled = true
+    sync_interval_in_seconds   = 60
+    post_build {
+      substitute = {
+        DOMAIN_NAME = local.cloud.domain_name
       }
     }
   }

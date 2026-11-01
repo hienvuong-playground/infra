@@ -30,3 +30,21 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: http-apex
+      port: 80
+      protocol: HTTP
+      hostname: "${DOMAIN_NAME}"
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https-apex
+      port: 443
+      protocol: HTTPS
+      hostname: "${DOMAIN_NAME}"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: wildcard-tls
+      allowedRoutes:
+        namespaces:
+          from: All

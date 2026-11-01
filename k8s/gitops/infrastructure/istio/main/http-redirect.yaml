@@ -7,6 +7,8 @@ spec:
   parentRefs:
     - name: public
       sectionName: http
+    - name: public
+      sectionName: http-apex
   rules:
     - filters:
         - type: RequestRedirect
