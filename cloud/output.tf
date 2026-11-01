@@ -34,10 +34,6 @@ output "observability_storage_account_name" {
   value = azurerm_storage_account.observability.name
 }
 
-output "static_web_app_host" {
-  value = azurerm_static_web_app.main.default_host_name
-}
-
 output "assets_base_url" {
   value = azurerm_storage_container.assets.url
 }
