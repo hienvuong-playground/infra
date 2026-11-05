@@ -32,6 +32,14 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "azure_services" {
   end_ip_address   = "0.0.0.0"
 }
 
+# Laptop access (dynamic home IP). Password auth is off, so a connection still needs an Entra token.
+resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_all" {
+  name             = "allow-all"
+  server_id        = azurerm_postgresql_flexible_server.main.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "255.255.255.255"
+}
+
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "backend" {
   server_name         = azurerm_postgresql_flexible_server.main.name
   resource_group_name = azurerm_resource_group.main.name
