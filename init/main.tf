@@ -100,10 +100,14 @@ resource "github_actions_organization_variable" "subscription_id" {
 }
 
 resource "github_actions_organization_secret" "gh_app_pem" {
-  secret_name             = "GH_APP_PEM"
-  visibility              = "selected"
+  secret_name = "GH_APP_PEM"
+  visibility  = "selected"
+  value       = var.github_app_pem
+}
+
+resource "github_actions_organization_secret_repositories" "gh_app_pem" {
+  secret_name             = github_actions_organization_secret.gh_app_pem.secret_name
   selected_repository_ids = [local.github_repo_ids.infra]
-  plaintext_value         = var.github_app_pem
 }
 
 data "azuread_client_config" "current" {}
@@ -119,4 +123,19 @@ resource "azuread_group" "dev" {
   display_name     = "Hien Test Group Dev"
   security_enabled = true
   owners           = [data.azuread_client_config.current.object_id]
+}
+
+# Lets build-push in backend/frontend open and merge the deploy PR with GITHUB_TOKEN (ADR 0004).
+resource "github_actions_organization_workflow_permissions" "main" {
+  organization_slug                = local.github_org.name
+  default_workflow_permissions     = "read"
+  can_approve_pull_request_reviews = true
+}
+
+resource "github_workflow_repository_permissions" "deploy_pr" {
+  for_each                         = toset(["backend", "frontend"])
+  repository                       = each.key
+  default_workflow_permissions     = "read"
+  can_approve_pull_request_reviews = true
+  depends_on                       = [github_actions_organization_workflow_permissions.main]
 }
