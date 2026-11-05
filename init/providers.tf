@@ -19,7 +19,7 @@ provider "azurerm" {
 
 provider "github" {
   token = var.github_token
-  owner = "hienvuong-playground"
+  owner = local.github_org.name
 }
 
 data "azurerm_client_config" "current" {}

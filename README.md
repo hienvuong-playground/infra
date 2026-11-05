@@ -4,24 +4,38 @@ This repository contains Terraform configuration for the playground environment 
 
 ## Prerequisites
 
+Rights the person running `init` must hold (init can't grant these to itself):
+
 - Azure CLI installed and logged in: `az login`
-- `Owner` and `Storage Blob Data Contributor` roles on the target Azure subscription.
-  - `Owner` to create role assignments
-  - `Storage Blob Data Contributor` to write the state of the bootstrap to storage
-- `User Administrator` entra role
+- Azure: `Owner` on the target subscription, to create the role assignments for the CI identity.
+- Entra: `Global Administrator`, to assign the `Application Administrator` and `Directory Readers` directory roles to the CI identity.
+- GitHub: owner of the `hienvuong-playground` org, to create the classic PAT with `admin:org` (see below).
 
 ## Structure
 
 - `init/` contains bootstrap resources such as the resource group and the storage account for Terraform state.
 - `main/` contains the application infrastructure resources.
 
-## GitHub token
+## Manual steps before init
 
-The `init` root uses a GitHub token to write GitHub Actions organization variables. Create a classic personal access token at `https://github.com/settings/tokens` with the `admin:org` scope. Then create the file `init/secrets.auto.tfvars` and add this line:
+1. **GitHub token.** `init` uses it to write GitHub Actions org variables and secrets. Create a classic personal access token at `https://github.com/settings/tokens` with the `admin:org` scope.
+2. **GitHub App** (used by `k8s/terraform` to manage deploy keys, see ADR 0003). Create it in the org settings → Developer settings → GitHub Apps:
+   - Repository permissions: only `Administration: Read and write`. No webhook.
+   - Install it on the org, for the `backend`, `frontend` and `infra` repos.
+   - Generate a private key (PEM).
+   - Put the App ID and installation ID in `k8s/terraform/providers.tf`.
+3. Create `init/secrets.auto.tfvars`:
 
 ```
-github_token = "your-token-here"
+github_token   = "your-token-here"
+github_app_pem = <<EOT
+-----BEGIN RSA PRIVATE KEY-----
+...
+-----END RSA PRIVATE KEY-----
+EOT
 ```
+
+Init pushes the PEM to the org secret `GH_APP_PEM` (visible to `infra` only). To rotate the key, change the file and rerun init.
 
 ## Bootstrap (run once)
 

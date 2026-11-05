@@ -45,7 +45,7 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
   scope      = "cluster"
 
   git_repository {
-    url                      = "ssh://git@github.com/hienvuong-playground/infra"
+    url                      = "ssh://git@github.com/${local.github_org}/infra"
     reference_type           = "branch"
     reference_value          = "main"
     ssh_private_key_base64   = base64encode(tls_private_key.infra.private_key_pem)
@@ -96,7 +96,7 @@ resource "azurerm_kubernetes_flux_configuration" "backend" {
   namespace  = "backend"
 
   git_repository {
-    url                      = "ssh://git@github.com/hienvuong-playground/backend"
+    url                      = "ssh://git@github.com/${local.github_org}/backend"
     reference_type           = "branch"
     reference_value          = "main"
     ssh_private_key_base64   = base64encode(tls_private_key.backend.private_key_pem)
@@ -137,7 +137,7 @@ resource "azurerm_kubernetes_flux_configuration" "frontend" {
   namespace  = "frontend"
 
   git_repository {
-    url                      = "ssh://git@github.com/hienvuong-playground/frontend"
+    url                      = "ssh://git@github.com/${local.github_org}/frontend"
     reference_type           = "branch"
     reference_value          = "main"
     ssh_private_key_base64   = base64encode(tls_private_key.frontend.private_key_pem)

@@ -9,9 +9,9 @@ data "terraform_remote_state" "cloud" {
 }
 
 data "azuread_group" "grafana_admins" {
-  display_name = "DevOps Engineers"
+  display_name = "Hien Test Group Admin"
 }
 
 data "azuread_group" "grafana_developers" {
-  display_name = "CL Playground"
+  display_name = "Hien Test Group Dev"
 }

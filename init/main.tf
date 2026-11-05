@@ -27,28 +27,28 @@ resource "azurerm_user_assigned_identity" "main" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
-resource "azurerm_federated_identity_credential" "infra" {
-  name                      = "infra"
+resource "azurerm_federated_identity_credential" "repo" {
+  for_each                  = local.github_repo_ids
+  name                      = each.key
   audience                  = ["api://AzureADTokenExchange"]
   issuer                    = "https://token.actions.githubusercontent.com"
   user_assigned_identity_id = azurerm_user_assigned_identity.main.id
-  subject                   = "repo:hienvuong-playground@325346053/infra@1358361523:ref:refs/heads/main"
+  subject                   = "repo:${local.github_org.name}@${local.github_org.id}/${each.key}@${each.value}:ref:refs/heads/main"
 }
 
-resource "azurerm_federated_identity_credential" "frontend" {
-  name                      = "frontend"
-  audience                  = ["api://AzureADTokenExchange"]
-  issuer                    = "https://token.actions.githubusercontent.com"
-  user_assigned_identity_id = azurerm_user_assigned_identity.main.id
-  subject                   = "repo:hienvuong-playground@325346053/frontend@1358357400:ref:refs/heads/main"
+moved {
+  from = azurerm_federated_identity_credential.infra
+  to   = azurerm_federated_identity_credential.repo["infra"]
 }
 
-resource "azurerm_federated_identity_credential" "backend" {
-  name                      = "backend"
-  audience                  = ["api://AzureADTokenExchange"]
-  issuer                    = "https://token.actions.githubusercontent.com"
-  user_assigned_identity_id = azurerm_user_assigned_identity.main.id
-  subject                   = "repo:hienvuong-playground@325346053/backend@1358360762:ref:refs/heads/main"
+moved {
+  from = azurerm_federated_identity_credential.frontend
+  to   = azurerm_federated_identity_credential.repo["frontend"]
+}
+
+moved {
+  from = azurerm_federated_identity_credential.backend
+  to   = azurerm_federated_identity_credential.repo["backend"]
 }
 
 resource "azurerm_role_assignment" "owner" {
@@ -84,17 +84,39 @@ resource "azuread_directory_role_assignment" "directory_readers" {
 resource "github_actions_organization_variable" "client_id" {
   variable_name = "AZURE_CLIENT_ID"
   visibility    = "all"
-  value         = "${azurerm_user_assigned_identity.main.client_id}"
+  value         = azurerm_user_assigned_identity.main.client_id
 }
 
 resource "github_actions_organization_variable" "tenant_id" {
   variable_name = "AZURE_TENANT_ID"
   visibility    = "all"
-  value         = "${data.azurerm_client_config.current.tenant_id}"
+  value         = data.azurerm_client_config.current.tenant_id
 }
 
 resource "github_actions_organization_variable" "subscription_id" {
   variable_name = "AZURE_SUBSCRIPTION_ID"
   visibility    = "all"
-  value         = "${data.azurerm_client_config.current.subscription_id}"
+  value         = data.azurerm_client_config.current.subscription_id
+}
+
+resource "github_actions_organization_secret" "gh_app_pem" {
+  secret_name             = "GH_APP_PEM"
+  visibility              = "selected"
+  selected_repository_ids = [local.github_repo_ids.infra]
+  plaintext_value         = var.github_app_pem
+}
+
+data "azuread_client_config" "current" {}
+
+resource "azuread_group" "admin" {
+  display_name     = "Hien Test Group Admin"
+  security_enabled = true
+  owners           = [data.azuread_client_config.current.object_id]
+  members          = [data.azuread_client_config.current.object_id]
+}
+
+resource "azuread_group" "dev" {
+  display_name     = "Hien Test Group Dev"
+  security_enabled = true
+  owners           = [data.azuread_client_config.current.object_id]
 }

@@ -42,7 +42,7 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ba
 }
 
 data "azuread_group" "devops" {
-  display_name = "DevOps Engineers"
+  display_name = "Hien Test Group Admin"
 }
 
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "devops" {

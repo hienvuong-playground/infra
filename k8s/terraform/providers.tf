@@ -34,7 +34,7 @@ provider "azurerm" {
 provider "azuread" {}
 
 provider "github" {
-  owner = "hienvuong-playground"
+  owner = local.github_org
 
   app_auth {
     id              = "4998541"
