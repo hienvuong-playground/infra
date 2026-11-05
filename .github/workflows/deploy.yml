@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
 
+# Terraform doesn't wait for the state lock, so a second run would fail instead of queueing.
+concurrency:
+  group: deploy-infra
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: read
