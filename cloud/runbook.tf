@@ -36,24 +36,30 @@ resource "azurerm_automation_runbook" "stop_aks" {
   }
 }
 
+locals {
+  aks_stop_time = "02:00" # Vietnam time (UTC+7)
+}
+
+# start_time is ignored after creation (it is computed from timestamp()), so a new stop time
+# only takes effect by recreating the schedule.
+resource "terraform_data" "aks_stop_time" {
+  input = local.aks_stop_time
+}
+
 resource "azurerm_automation_schedule" "main" {
   name                    = "stop-aks-daily"
   resource_group_name     = azurerm_resource_group.main.name
   automation_account_name = azurerm_automation_account.main.name
   frequency               = "Day"
   interval                = 1
-  # 1am Vietnam time (UTC+7). Computed dynamically so a recreate always lands
-  # comfortably in the future (Azure rejects start_time < 5 minutes out).
-  # timestamp() is UTC; +48h guarantees the resulting 01:00+07:00 is ~1-2 days
-  # ahead regardless of the UTC hour at apply time. The schedule is daily, so
-  # only the first run is offset — subsequent runs fire at 1am every day.
-  start_time  = "${formatdate("YYYY-MM-DD", timeadd(timestamp(), "24h"))}T01:00:00+07:00"
-  description = "Stops AKS every day at 1am Vietnam time"
+  # UTC date + 48h at the stop time, so a recreate always lands 1-2 days in the future whatever the
+  # UTC hour at apply (Azure rejects start_time < 5 minutes out). Daily, so only the first run is offset.
+  start_time  = "${formatdate("YYYY-MM-DD", timeadd(timestamp(), "48h"))}T${local.aks_stop_time}:00+07:00"
+  description = "Stops AKS every day at ${local.aks_stop_time} Vietnam time"
 
   lifecycle {
-    ignore_changes = [
-      start_time,
-    ]
+    ignore_changes       = [start_time]
+    replace_triggered_by = [terraform_data.aks_stop_time]
   }
 }
 
@@ -66,5 +72,10 @@ resource "azurerm_automation_job_schedule" "link" {
   parameters = {
     resourcegroup = azurerm_resource_group.main.name
     clustername   = azurerm_kubernetes_cluster.main.name
+  }
+
+  # Deleting the schedule drops its job link in Azure.
+  lifecycle {
+    replace_triggered_by = [azurerm_automation_schedule.main.id]
   }
 }
