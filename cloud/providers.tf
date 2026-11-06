@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/azuread"
       version = "~> 3.10.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.28.1"
+    }
   }
 
   backend "azurerm" {
@@ -27,6 +31,8 @@ provider "azurerm" {
 provider "azapi" {}
 
 provider "azuread" {}
+
+provider "cloudflare" {}
 
 # provider "github" {
 #   owner = "hienvuong-playground"

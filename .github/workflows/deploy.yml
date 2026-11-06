@@ -54,9 +54,13 @@ jobs:
         run: terraform init -reconfigure -upgrade -backend-config=../terraform-backend/main.tfbackend
 
       - name: Terraform Plan
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: terraform apply -auto-approve tfplan
 
   terraform-k8s:
