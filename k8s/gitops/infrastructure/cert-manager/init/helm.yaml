@@ -31,3 +31,18 @@ spec:
       enabled: true
     podLabels:
       azure.workload.identity/use: "true"
+    serviceAccount:
+      annotations:
+        azure.workload.identity/client-id: ${MI_CERT_MANAGER}
+    # The CSI driver only syncs the cloudflare-api-token Secret while a pod mounts the volume.
+    volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: cloudflare-api-token
+    volumeMounts:
+      - name: secrets-store
+        mountPath: /mnt/secrets-store
+        readOnly: true

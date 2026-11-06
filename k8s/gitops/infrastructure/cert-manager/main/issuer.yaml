@@ -11,10 +11,7 @@ spec:
       name: letsencrypt
     solvers:
     - dns01:
-        azureDNS:
-          resourceGroupName: ${RG_MANUAL}
-          subscriptionID: ${AZURE_SUBSCRIPTION_ID}
-          hostedZoneName: ${DOMAIN_NAME}
-          environment: AzurePublicCloud
-          managedIdentity:
-            clientID: ${MI_CERT_MANAGER}
+        cloudflare:
+          apiTokenSecretRef:
+            name: cloudflare-api-token
+            key: api-token

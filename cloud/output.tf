@@ -6,12 +6,8 @@ output "resource_group_name" {
   value = azurerm_resource_group.main.name
 }
 
-output "rg_manual_name" {
-  value = data.azurerm_resource_group.rg_manual.name
-}
-
 output "domain_name" {
-  value = data.azurerm_dns_zone.dns_zone.name
+  value = data.cloudflare_zone.main.name
 }
 
 output "grafana_client_id" {

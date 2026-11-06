@@ -52,12 +52,6 @@ resource "azurerm_federated_identity_credential" "cert_manager" {
   subject                   = "system:serviceaccount:cert-manager:cert-manager"
 }
 
-resource "azurerm_role_assignment" "cert_manager_dns_zone_contributor" {
-  principal_id         = azurerm_user_assigned_identity.cert_manager.principal_id
-  role_definition_name = "DNS Zone Contributor"
-  scope                = data.azurerm_dns_zone.dns_zone.id
-}
-
 resource "azurerm_user_assigned_identity" "loki" {
   location            = azurerm_resource_group.main.location
   name                = "id-${local.project_name}-loki"

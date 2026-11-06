@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - flux-kustomizations.yaml
   - namespace.yaml
+  - secret-provider-class.yaml

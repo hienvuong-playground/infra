@@ -12,19 +12,3 @@ resource "azurerm_role_assignment" "aks_gateway_pip" {
   role_definition_name = "Network Contributor"
   principal_id         = azurerm_kubernetes_cluster.main.identity[0].principal_id
 }
-
-resource "azurerm_dns_a_record" "wildcard" {
-  name                = "*"
-  zone_name           = data.azurerm_dns_zone.dns_zone.name
-  resource_group_name = data.azurerm_resource_group.rg_manual.name
-  ttl                 = 300
-  target_resource_id  = azurerm_public_ip.gateway.id
-}
-
-resource "azurerm_dns_a_record" "apex" {
-  name                = "@"
-  zone_name           = data.azurerm_dns_zone.dns_zone.name
-  resource_group_name = data.azurerm_resource_group.rg_manual.name
-  ttl                 = 300
-  target_resource_id  = azurerm_public_ip.gateway.id
-}

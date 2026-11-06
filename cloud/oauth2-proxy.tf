@@ -8,7 +8,7 @@ resource "azuread_application" "oauth2_proxy" {
   owners           = [data.azurerm_client_config.current.object_id]
 
   web {
-    redirect_uris = [for host in local.oauth2_proxy_hosts : "https://${host}.${data.azurerm_dns_zone.dns_zone.name}/oauth2/callback"]
+    redirect_uris = [for host in local.oauth2_proxy_hosts : "https://${host}.${data.cloudflare_zone.main.name}/oauth2/callback"]
   }
 }
 

@@ -5,7 +5,7 @@ resource "azuread_application" "grafana" {
   group_membership_claims = ["SecurityGroup"]
 
   web {
-    redirect_uris = ["https://grafana.${data.azurerm_dns_zone.dns_zone.name}/login/azuread"]
+    redirect_uris = ["https://grafana.${data.cloudflare_zone.main.name}/login/azuread"]
   }
 }
 

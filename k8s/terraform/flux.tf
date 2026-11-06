@@ -60,7 +60,6 @@ resource "azurerm_kubernetes_flux_configuration" "infra" {
 
     post_build {
       substitute = {
-        RG_MANUAL                     = local.cloud.rg_manual_name
         DOMAIN_NAME                   = local.cloud.domain_name
         AZURE_SUBSCRIPTION_ID         = data.azurerm_client_config.current.subscription_id
         AZURE_TENANT_ID               = data.azurerm_client_config.current.tenant_id
