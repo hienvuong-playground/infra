@@ -61,5 +61,6 @@ resource "azurerm_role_assignment" "cert_manager_cloudflare_token" {
 resource "cloudflare_bot_management" "main" {
   zone_id            = data.cloudflare_zone.main.id
   fight_mode         = true
+  enable_js          = true # API rejects fight_mode without it
   ai_bots_protection = "block"
 }
