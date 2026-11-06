@@ -57,17 +57,6 @@ resource "azurerm_role_assignment" "cert_manager_cloudflare_token" {
   scope                = azurerm_key_vault_secret.cloudflare_cert_manager_token.resource_versionless_id
 }
 
-# Bot Fight Mode was tried and turned off: on Free it is zone-wide and can't be skipped, so it also
-# challenged api. Off is the default, so the setting is no longer managed here. The resource can't be
-# destroyed, so it is only dropped from state (ADR 0018).
-removed {
-  from = cloudflare_bot_management.main
-
-  lifecycle {
-    destroy = false
-  }
-}
-
 # Challenges only the storefront's HTML. Challenges break fetch/XHR, so api, grafana, flux and the
 # hashed assets are left out (ADR 0018).
 resource "cloudflare_ruleset" "waf_custom" {
