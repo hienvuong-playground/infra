@@ -9,7 +9,10 @@ Rights the person running `init` must hold (init can't grant these to itself):
 - Azure CLI installed and logged in: `az login`
 - Azure: `Owner` on the target subscription, to create the role assignments for the CI identity.
 - Entra: `Global Administrator`, to assign the `Application Administrator` and `Directory Readers` directory roles to the CI identity.
-- GitHub: owner of the `hienvuong-playground` org, with a classic PAT scoped `admin:org` and `repo` (see below). `init/bootstrap.sh` checks all of these first.
+- GitHub: owner of the `hienvuong-playground` org, with a classic PAT scoped `admin:org` and `repo` (see below).
+- Cloudflare: a hand-made account token `infra-ci` (permissions in ADR 0018).
+
+`init/bootstrap.sh` checks all of these first.
 
 ## Structure
 
@@ -33,6 +36,7 @@ github_app_pem = <<EOT
 ...
 -----END RSA PRIVATE KEY-----
 EOT
+cloudflare_api_token = "..."
 ```
 
 Init pushes the PEM to the org secret `GH_APP_PEM` (visible to `infra` only). To rotate the key, change the file and rerun init.
