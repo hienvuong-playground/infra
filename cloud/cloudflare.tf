@@ -57,8 +57,7 @@ resource "azurerm_role_assignment" "cert_manager_cloudflare_token" {
   scope                = azurerm_key_vault_secret.cloudflare_cert_manager_token.resource_versionless_id
 }
 
-# Challenges only the storefront's HTML. Challenges break fetch/XHR, so api, grafana, flux and the
-# hashed assets are left out (ADR 0018).
+# Challenges only the storefront. Challenges break fetch/XHR, so api, grafana and flux are left out (ADR 0018).
 resource "cloudflare_ruleset" "waf_custom" {
   zone_id = data.cloudflare_zone.main.id
   name    = "default"
@@ -67,8 +66,8 @@ resource "cloudflare_ruleset" "waf_custom" {
 
   rules = [{
     ref         = "challenge_www"
-    description = "Managed Challenge on www HTML"
-    expression  = "(http.host eq \"www.${data.cloudflare_zone.main.name}\" and not starts_with(http.request.uri.path, \"/assets/\"))"
+    description = "Managed Challenge on www"
+    expression  = "http.host eq \"www.${data.cloudflare_zone.main.name}\""
     action      = "managed_challenge"
   }]
 }
