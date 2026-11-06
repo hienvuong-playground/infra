@@ -57,13 +57,15 @@ resource "azurerm_role_assignment" "cert_manager_cloudflare_token" {
   scope                = azurerm_key_vault_secret.cloudflare_cert_manager_token.resource_versionless_id
 }
 
-# Bot Fight Mode is off: on Free it is zone-wide and can't be skipped, so it also challenged api
-# (Azure IPs got 403). The resource can't be destroyed by Terraform, so it stays with fight_mode = false.
-resource "cloudflare_bot_management" "main" {
-  zone_id            = data.cloudflare_zone.main.id
-  fight_mode         = false
-  enable_js          = true
-  ai_bots_protection = "block"
+# Bot Fight Mode was tried and turned off: on Free it is zone-wide and can't be skipped, so it also
+# challenged api. Off is the default, so the setting is no longer managed here. The resource can't be
+# destroyed, so it is only dropped from state (ADR 0018).
+removed {
+  from = cloudflare_bot_management.main
+
+  lifecycle {
+    destroy = false
+  }
 }
 
 # Challenges only the storefront's HTML. Challenges break fetch/XHR, so api, grafana, flux and the
