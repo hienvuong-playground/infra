@@ -57,10 +57,27 @@ resource "azurerm_role_assignment" "cert_manager_cloudflare_token" {
   scope                = azurerm_key_vault_secret.cloudflare_cert_manager_token.resource_versionless_id
 }
 
-# Free plan bot protection. Zone-wide and can't be skipped by rules, so it may also challenge api (ADR 0018).
+# Bot Fight Mode is off: on Free it is zone-wide and can't be skipped, so it also challenged api
+# (Azure IPs got 403). The resource can't be destroyed by Terraform, so it stays with fight_mode = false.
 resource "cloudflare_bot_management" "main" {
   zone_id            = data.cloudflare_zone.main.id
-  fight_mode         = true
-  enable_js          = true # API rejects fight_mode without it
+  fight_mode         = false
+  enable_js          = true
   ai_bots_protection = "block"
+}
+
+# Challenges only the storefront's HTML. Challenges break fetch/XHR, so api, grafana, flux and the
+# hashed assets are left out (ADR 0018).
+resource "cloudflare_ruleset" "waf_custom" {
+  zone_id = data.cloudflare_zone.main.id
+  name    = "default"
+  phase   = "http_request_firewall_custom"
+  kind    = "zone"
+
+  rules = [{
+    ref         = "challenge_www"
+    description = "Managed Challenge on www HTML"
+    expression  = "(http.host eq \"www.${data.cloudflare_zone.main.name}\" and not starts_with(http.request.uri.path, \"/assets/\"))"
+    action      = "managed_challenge"
+  }]
 }
