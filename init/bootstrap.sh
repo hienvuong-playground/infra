@@ -14,6 +14,8 @@ GITHUB_ORG=$(sed -n 's/^ *name *= *"\(.*\)"/\1/p' locals.tf)
 RESOURCE_GROUP=rg-playground-init-state
 LOCATION=westeurope
 GLOBAL_ADMIN_TEMPLATE_ID=62e90394-69f5-4237-9190-012177145e10
+CLOUDFLARE_ACCOUNT_ID=dd20837e04780aa287558d9f56bb5548
+CLOUDFLARE_ZONE=hienvuong.com
 
 # --- Preflight: report every missing right at once, before anything is created ---
 errors=()
@@ -54,6 +56,20 @@ else
     role=$(curl -sS -H "Authorization: Bearer $GITHUB_TOKEN" \
       "https://api.github.com/user/memberships/orgs/$GITHUB_ORG" | jq -r '.role // empty')
     [[ $role == admin ]] || fail "GitHub: PAT owner is not admin of org $GITHUB_ORG"
+  fi
+
+  CLOUDFLARE_TOKEN=$(sed -n 's/^cloudflare_api_token *= *"\(.*\)"/\1/p' "$TFVARS")
+  if [[ -z $CLOUDFLARE_TOKEN ]]; then
+    fail "$TFVARS: cloudflare_api_token not set"
+  else
+    cf() { curl -sS -H "Authorization: Bearer $CLOUDFLARE_TOKEN" "https://api.cloudflare.com/client/v4$1"; }
+    status=$(cf "/accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify" | jq -r '.result.status // empty')
+    [[ $status == active ]] || fail "Cloudflare: token is not an active token of account $CLOUDFLARE_ACCOUNT_ID"
+    # Only the read side of each right can be checked; DNS and Zone Settings Edit can't be tested without writing.
+    [[ $(cf "/accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/permission_groups" | jq '.result | length? // 0') -gt 0 ]] ||
+      fail "Cloudflare: token lacks Account API Tokens Edit"
+    [[ $(cf "/zones?name=$CLOUDFLARE_ZONE" | jq '.result | length? // 0') -eq 1 ]] ||
+      fail "Cloudflare: token can't read zone $CLOUDFLARE_ZONE"
   fi
 fi
 

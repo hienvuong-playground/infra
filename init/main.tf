@@ -110,6 +110,18 @@ resource "github_actions_organization_secret_repositories" "gh_app_pem" {
   selected_repository_ids = [local.github_repo_ids.infra]
 }
 
+# Created by hand: Cloudflare doesn't let a token created via the API manage other tokens (ADR 0018).
+resource "github_actions_organization_secret" "cloudflare_api_token" {
+  secret_name = "CLOUDFLARE_API_TOKEN"
+  visibility  = "selected"
+  value       = var.cloudflare_api_token
+}
+
+resource "github_actions_organization_secret_repositories" "cloudflare_api_token" {
+  secret_name             = github_actions_organization_secret.cloudflare_api_token.secret_name
+  selected_repository_ids = [local.github_repo_ids.infra]
+}
+
 data "azuread_client_config" "current" {}
 
 resource "azuread_group" "admin" {
