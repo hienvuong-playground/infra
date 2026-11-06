@@ -56,3 +56,10 @@ resource "azurerm_role_assignment" "cert_manager_cloudflare_token" {
   role_definition_name = "Key Vault Secrets User"
   scope                = azurerm_key_vault_secret.cloudflare_cert_manager_token.resource_versionless_id
 }
+
+# Free plan bot protection. Zone-wide and can't be skipped by rules, so it may also challenge api (ADR 0018).
+resource "cloudflare_bot_management" "main" {
+  zone_id            = data.cloudflare_zone.main.id
+  fight_mode         = true
+  ai_bots_protection = "block"
+}
