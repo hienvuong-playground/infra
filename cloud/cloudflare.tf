@@ -71,3 +71,25 @@ resource "cloudflare_ruleset" "waf_custom" {
     action      = "managed_challenge"
   }]
 }
+
+# Free plan: `matches` needs Business, and period/mitigation_timeout are fixed at 10s.
+# `wildcard` is case-insensitive like Express routing, so /API/... is counted too.
+resource "cloudflare_ruleset" "rate_limit" {
+  zone_id = data.cloudflare_zone.main.id
+  name    = "default"
+  phase   = "http_ratelimit"
+  kind    = "zone"
+
+  rules = [{
+    ref         = "rate_limit_api_requests_ip"
+    description = "Rate limit API requests by IP"
+    expression  = "(http.request.uri.path wildcard \"/api/*\")"
+    action      = "block"
+    ratelimit = {
+      characteristics     = ["cf.colo.id", "ip.src"]
+      period              = 10
+      requests_per_period = 100
+      mitigation_timeout  = 10
+    }
+  }]
+}
