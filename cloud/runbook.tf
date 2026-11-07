@@ -15,6 +15,12 @@ resource "azurerm_role_assignment" "runbook_contributor" {
   principal_id         = azurerm_automation_account.main.identity[0].principal_id
 }
 
+resource "azurerm_role_assignment" "runbook_postgres_contributor" {
+  scope                = azurerm_postgresql_flexible_server.main.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_automation_account.main.identity[0].principal_id
+}
+
 resource "azurerm_automation_runbook" "stop_aks" {
   name                    = "Stop-AKS-Cluster"
   resource_group_name     = azurerm_resource_group.main.name
@@ -36,18 +42,33 @@ resource "azurerm_automation_runbook" "stop_aks" {
   }
 }
 
+resource "azurerm_automation_runbook" "stop_postgres" {
+  name                    = "Stop-PostgreSQL-Server"
+  resource_group_name     = azurerm_resource_group.main.name
+  location                = azurerm_resource_group.main.location
+  automation_account_name = azurerm_automation_account.main.name
+  log_verbose             = false
+  log_progress            = true
+  runbook_type            = "PowerShell72"
+
+  content = file("${path.module}/scripts/stop-postgres.ps1")
+
+  lifecycle {
+    # Same stale runbook_type read-back as stop_aks
+    ignore_changes = [
+      runbook_type,
+    ]
+  }
+}
+
 locals {
   aks_stop_time = "02:00" # Vietnam time (UTC+7)
 }
 
-# start_time is ignored after creation (it is computed from timestamp()), so a new stop time
-# only takes effect by recreating the schedule.
-resource "terraform_data" "aks_stop_time" {
-  input = local.aks_stop_time
-}
-
 resource "azurerm_automation_schedule" "main" {
-  name                    = "stop-aks-daily"
+  # start_time is ignored after creation, so the stop time is in the name: changing it recreates
+  # the schedule (and its job link).
+  name                    = "stop-aks-daily-${replace(local.aks_stop_time, ":", "")}"
   resource_group_name     = azurerm_resource_group.main.name
   automation_account_name = azurerm_automation_account.main.name
   frequency               = "Day"
@@ -58,8 +79,7 @@ resource "azurerm_automation_schedule" "main" {
   description = "Stops AKS every day at ${local.aks_stop_time} Vietnam time"
 
   lifecycle {
-    ignore_changes       = [start_time]
-    replace_triggered_by = [terraform_data.aks_stop_time]
+    ignore_changes = [start_time]
   }
 }
 
@@ -73,9 +93,16 @@ resource "azurerm_automation_job_schedule" "link" {
     resourcegroup = azurerm_resource_group.main.name
     clustername   = azurerm_kubernetes_cluster.main.name
   }
+}
 
-  # Deleting the schedule drops its job link in Azure.
-  lifecycle {
-    replace_triggered_by = [azurerm_automation_schedule.main.id]
+resource "azurerm_automation_job_schedule" "stop_postgres" {
+  resource_group_name     = azurerm_resource_group.main.name
+  automation_account_name = azurerm_automation_account.main.name
+  schedule_name           = azurerm_automation_schedule.main.name
+  runbook_name            = azurerm_automation_runbook.stop_postgres.name
+
+  parameters = {
+    resourcegroup = azurerm_resource_group.main.name
+    servername    = azurerm_postgresql_flexible_server.main.name
   }
 }
