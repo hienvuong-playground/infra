@@ -21,44 +21,43 @@ resource "azurerm_role_assignment" "runbook_postgres_contributor" {
   principal_id         = azurerm_automation_account.main.identity[0].principal_id
 }
 
-resource "azurerm_automation_runbook" "stop_aks" {
-  name                    = "Stop-AKS-Cluster"
-  resource_group_name     = azurerm_resource_group.main.name
-  location                = azurerm_resource_group.main.location
-  automation_account_name = azurerm_automation_account.main.name
-  log_verbose             = false
-  log_progress            = true
-  runbook_type            = "PowerShell72"
+# PowerShell 7.4+ is only available through runtime environments; 7.2 is retired.
+resource "azurerm_automation_runtime_environment" "powershell" {
+  name                  = "PowerShell-7.6"
+  location              = azurerm_resource_group.main.location
+  automation_account_id = azurerm_automation_account.main.id
+  runtime_language      = "PowerShell"
+  runtime_version       = "7.6"
 
-  content = file("${path.module}/scripts/stop-aks.ps1")
-
-  lifecycle {
-    # azurerm never reads runbook_type back from the API, so state stays "PowerShell"
-    # while Azure is already "PowerShell72". As runbook_type is ForceNew, that stale-state
-    # mismatch would otherwise force a needless destroy/recreate on every plan.
-    ignore_changes = [
-      runbook_type,
-    ]
+  runtime_default_packages = {
+    "az" = "15.1.0"
   }
 }
 
+resource "azurerm_automation_runbook" "stop_aks" {
+  name                     = "Stop-AKS-Cluster"
+  resource_group_name      = azurerm_resource_group.main.name
+  location                 = azurerm_resource_group.main.location
+  automation_account_name  = azurerm_automation_account.main.name
+  log_verbose              = false
+  log_progress             = true
+  runbook_type             = "PowerShell"
+  runtime_environment_name = azurerm_automation_runtime_environment.powershell.name
+
+  content = file("${path.module}/scripts/stop-aks.ps1")
+}
+
 resource "azurerm_automation_runbook" "stop_postgres" {
-  name                    = "Stop-PostgreSQL-Server"
-  resource_group_name     = azurerm_resource_group.main.name
-  location                = azurerm_resource_group.main.location
-  automation_account_name = azurerm_automation_account.main.name
-  log_verbose             = false
-  log_progress            = true
-  runbook_type            = "PowerShell72"
+  name                     = "Stop-PostgreSQL-Server"
+  resource_group_name      = azurerm_resource_group.main.name
+  location                 = azurerm_resource_group.main.location
+  automation_account_name  = azurerm_automation_account.main.name
+  log_verbose              = false
+  log_progress             = true
+  runbook_type             = "PowerShell"
+  runtime_environment_name = azurerm_automation_runtime_environment.powershell.name
 
   content = file("${path.module}/scripts/stop-postgres.ps1")
-
-  lifecycle {
-    # Same stale runbook_type read-back as stop_aks
-    ignore_changes = [
-      runbook_type,
-    ]
-  }
 }
 
 locals {

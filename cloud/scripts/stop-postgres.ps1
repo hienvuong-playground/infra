@@ -6,6 +6,8 @@ param(
     [string]$ServerName
 )
 
+$ErrorActionPreference = "Stop"
+
 Write-Output "Connecting to Azure..."
 Connect-AzAccount -Identity
 
@@ -20,7 +22,7 @@ if ($server.State -ne "Ready") {
 Write-Output "Stopping PostgreSQL server '$ServerName' in resource group '$ResourceGroup'..."
 
 try {
-    Stop-AzPostgreSqlFlexibleServer -ResourceGroupName $ResourceGroup -Name $ServerName -ErrorAction Stop
+    Stop-AzPostgreSqlFlexibleServer -ResourceGroupName $ResourceGroup -Name $ServerName
     Write-Output "Success: server '$ServerName' stop command completed."
 }
 catch {

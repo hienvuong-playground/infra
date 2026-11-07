@@ -6,6 +6,8 @@ param(
     [string]$ClusterName
 )
 
+$ErrorActionPreference = "Stop"
+
 Write-Output "Connecting to Azure..."
 Connect-AzAccount -Identity
 
