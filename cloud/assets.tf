@@ -1,5 +1,5 @@
 # Public content images. Blob names are content hashes, so a blob never changes
-# in place and can be cached as immutable; see general/adr/0006.
+# in place and can be cached as immutable; see note 0006.
 locals {
   asset_content_types = {
     jpg  = "image/jpeg"

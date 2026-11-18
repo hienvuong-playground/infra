@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks the runner has every right init needs, then creates what init itself needs
 # before it can run: registered resource providers and the storage account holding
-# init's own state. Idempotent. See ADR 0016.
+# init's own state. Idempotent. See note 0016.
 set -euo pipefail
 cd "$(dirname "$0")"
 

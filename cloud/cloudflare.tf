@@ -22,7 +22,7 @@ resource "cloudflare_dns_record" "wildcard" {
   proxied = true
 }
 
-# Edge → origin over HTTPS with the origin cert validated (ADR 0013).
+# Edge → origin over HTTPS with the origin cert validated (note 0013).
 resource "cloudflare_zone_setting" "ssl" {
   zone_id    = data.cloudflare_zone.main.id
   setting_id = "ssl"
@@ -57,7 +57,7 @@ resource "azurerm_role_assignment" "cert_manager_cloudflare_token" {
   scope                = azurerm_key_vault_secret.cloudflare_cert_manager_token.resource_versionless_id
 }
 
-# Challenges only the storefront. Challenges break fetch/XHR, so api, grafana and flux are left out (ADR 0018).
+# Challenges only the storefront. Challenges break fetch/XHR, so api, grafana and flux are left out (note 0018).
 resource "cloudflare_ruleset" "waf_custom" {
   zone_id = data.cloudflare_zone.main.id
   name    = "default"

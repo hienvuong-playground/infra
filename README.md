@@ -10,7 +10,7 @@ Rights the person running `init` must hold (init can't grant these to itself):
 - Azure: `Owner` on the target subscription, to create the role assignments for the CI identity.
 - Entra: `Global Administrator`, to assign the `Application Administrator` and `Directory Readers` directory roles to the CI identity.
 - GitHub: owner of the `hienvuong-playground` org, with a classic PAT scoped `admin:org` and `repo` (see below).
-- Cloudflare: a hand-made account token `infra-ci` (permissions in ADR 0018).
+- Cloudflare: a hand-made account token `infra-ci` (permissions in note 0018).
 
 `init/bootstrap.sh` checks all of these first.
 
@@ -22,7 +22,7 @@ Rights the person running `init` must hold (init can't grant these to itself):
 ## Manual steps before init
 
 1. **GitHub token.** `init` uses it to write GitHub Actions org variables and secrets. Create a classic personal access token at `https://github.com/settings/tokens` with the `admin:org` and `repo` scopes (`repo` is for the repo-level Actions settings).
-2. **GitHub App** (used by `k8s/terraform` to manage deploy keys, see ADR 0003). Create it in the org settings → Developer settings → GitHub Apps:
+2. **GitHub App** (used by `k8s/terraform` to manage deploy keys, see note 0003). Create it in the org settings → Developer settings → GitHub Apps:
    - Repository permissions: only `Administration: Read and write`. No webhook.
    - Install it on the org, for the `backend`, `frontend` and `infra` repos.
    - Generate a private key (PEM).

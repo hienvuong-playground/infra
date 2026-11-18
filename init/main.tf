@@ -110,7 +110,7 @@ resource "github_actions_organization_secret_repositories" "gh_app_pem" {
   selected_repository_ids = [local.github_repo_ids.infra]
 }
 
-# Created by hand: Cloudflare doesn't let a token created via the API manage other tokens (ADR 0018).
+# Created by hand: Cloudflare doesn't let a token created via the API manage other tokens (note 0018).
 resource "github_actions_organization_secret" "cloudflare_api_token" {
   secret_name = "CLOUDFLARE_API_TOKEN"
   visibility  = "selected"
@@ -137,7 +137,7 @@ resource "azuread_group" "dev" {
   owners           = [data.azuread_client_config.current.object_id]
 }
 
-# Lets build-push in backend/frontend open and merge the deploy PR with GITHUB_TOKEN (ADR 0004).
+# Lets build-push in backend/frontend open and merge the deploy PR with GITHUB_TOKEN (note 0004).
 resource "github_actions_organization_workflow_permissions" "main" {
   organization_slug                = local.github_org.name
   default_workflow_permissions     = "read"
