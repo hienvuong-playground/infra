@@ -26,7 +26,6 @@ spec:
           - https://monitor.azure.com/.default
     processors:
       batch: {}
-      cumulativetodelta: {}
     exporters:
       prometheusremotewrite:
         endpoint: http://prometheus-server.observability.svc.cluster.local/api/v1/write
@@ -53,13 +52,8 @@ spec:
       pipelines:
         metrics:
           receivers: [otlp]
-          exporters: [prometheusremotewrite]
-        # Separate pipeline: App Insights needs delta temporality, but
-        # Prometheus remote-write needs cumulative.
-        metrics/azure:
-          receivers: [otlp]
-          processors: [cumulativetodelta, batch]
-          exporters: [otlphttp/azuremonitor]
+          processors: [batch]
+          exporters: [prometheusremotewrite, otlphttp/azuremonitor]
         logs:
           receivers: [otlp]
           processors: [batch]
