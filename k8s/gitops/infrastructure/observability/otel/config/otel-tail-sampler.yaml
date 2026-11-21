@@ -26,16 +26,46 @@ spec:
           - https://monitor.azure.com/.default
     processors:
       batch: {}
-      # Keeps every trace with an ERROR span plus ~10% of the rest. Server-side
-      # 4xx is UNSET per HTTP semconv, so those traces fall into the 10%.
+      # Server-side 4xx is UNSET per HTTP semconv, so those traces fall into sample-rest.
       tail_sampling:
         decision_wait: 10s
         policies:
-          - name: errors
+          - name: keep-errors
             type: status_code
             status_code:
               status_codes: [ERROR]
-          - name: baseline
+          - name: keep-slow
+            type: latency
+            latency:
+              threshold_ms: 2000
+          # A drop decision overrides keep-errors and keep-slow, so failed or slow
+          # probes have to be excluded here; those policies can't rescue them.
+          - name: drop-health
+            type: drop
+            drop:
+              drop_sub_policy:
+                - name: health-route
+                  type: string_attribute
+                  string_attribute:
+                    key: http.route
+                    values: [/livez, /readyz]
+                - name: no-error
+                  type: not
+                  not:
+                    not_sub_policy:
+                      name: any-error
+                      type: status_code
+                      status_code:
+                        status_codes: [ERROR]
+                - name: not-slow
+                  type: not
+                  not:
+                    not_sub_policy:
+                      name: slow
+                      type: latency
+                      latency:
+                        threshold_ms: 2000
+          - name: sample-rest
             type: probabilistic
             probabilistic:
               sampling_percentage: 10
