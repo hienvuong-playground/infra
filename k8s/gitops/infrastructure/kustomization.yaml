@@ -8,3 +8,4 @@ resources:
   - cert-manager
   - gateway-api
   - istio
+  - container-insights

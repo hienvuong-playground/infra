@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: container-azm-ms-agentconfig
+  namespace: kube-system
+data:
+  schema-version: v1
+  log-data-collection-settings: |-
+    [log_collection_settings]
+       [log_collection_settings.filter_using_annotations]
+          enabled = true

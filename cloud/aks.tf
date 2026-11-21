@@ -32,6 +32,11 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   monitor_metrics {}
 
+  oms_agent {
+    log_analytics_workspace_id      = azurerm_log_analytics_workspace.main.id
+    msi_auth_for_monitoring_enabled = true
+  }
+
   default_node_pool {
     name       = "default"
     vm_size    = "standard_d4as_v7"
