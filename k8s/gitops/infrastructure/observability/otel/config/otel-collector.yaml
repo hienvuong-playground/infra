@@ -26,6 +26,11 @@ spec:
           - https://monitor.azure.com/.default
     processors:
       batch: {}
+      # Failed probes (>= 400) are kept, same as logs and traces (note 0030).
+      filter/drop-health:
+        error_mode: ignore
+        metric_conditions:
+          - (datapoint.attributes["http.route"] == "/livez" or datapoint.attributes["http.route"] == "/readyz") and datapoint.attributes["http.status_code"] < 400
     exporters:
       prometheusremotewrite:
         endpoint: http://prometheus-server.observability.svc.cluster.local/api/v1/write
@@ -52,7 +57,7 @@ spec:
       pipelines:
         metrics:
           receivers: [otlp]
-          processors: [batch]
+          processors: [filter/drop-health, batch]
           exporters: [prometheusremotewrite, otlphttp/azuremonitor]
         logs:
           receivers: [otlp]
