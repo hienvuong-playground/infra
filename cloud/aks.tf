@@ -30,6 +30,8 @@ resource "azurerm_kubernetes_cluster" "main" {
     vertical_pod_autoscaler_enabled = true
   }
 
+  monitor_metrics {}
+
   default_node_pool {
     name       = "default"
     vm_size    = "standard_d4as_v7"
