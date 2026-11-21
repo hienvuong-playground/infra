@@ -47,7 +47,6 @@ spec:
         name: istio
         namespace: flux-system
   values:
-    pilot:
-      resources:
-        requests:
-          cpu: 100m
+    resources:
+      requests:
+        cpu: 100m
