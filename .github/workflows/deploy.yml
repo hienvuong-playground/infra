@@ -28,6 +28,7 @@ jobs:
             terraform:
               - 'cloud/**'
               - 'k8s/terraform/**'
+              - 'grafana/**'
               - 'terraform-backend/**'
 
   terraform-cloud:
@@ -93,4 +94,39 @@ jobs:
       - name: Terraform Apply
         env:
           TF_VAR_github_app_pem: ${{ secrets.GH_APP_PEM }}
+        run: terraform apply -auto-approve tfplan
+
+  terraform-grafana:
+    runs-on: ubuntu-24.04
+    needs: terraform-cloud
+    defaults:
+      run:
+        working-directory: grafana
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # ce34e7e5-… is AMG's Entra app id, the same in every tenant. The token lasts about an hour, enough for plan + apply.
+      - name: Grafana token
+        run: |
+          token=$(az account get-access-token --resource ce34e7e5-485f-4d76-964f-b3d2b16d1e4f --query accessToken -o tsv)
+          echo "::add-mask::$token"
+          echo "GRAFANA_AUTH=$token" >> "$GITHUB_ENV"
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.1
+
+      - name: Terraform Init
+        run: terraform init -reconfigure -upgrade -backend-config=../terraform-backend/main.tfbackend
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
         run: terraform apply -auto-approve tfplan

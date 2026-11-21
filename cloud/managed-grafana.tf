@@ -36,3 +36,13 @@ resource "azurerm_role_assignment" "managed_grafana_admin_terraform" {
   role_definition_name = "Grafana Admin"
   scope                = azurerm_dashboard_grafana.main.id
 }
+
+data "azuread_group" "dev" {
+  display_name = "Hien Test Group Dev"
+}
+
+resource "azurerm_role_assignment" "managed_grafana_viewer_dev" {
+  principal_id         = data.azuread_group.dev.object_id
+  role_definition_name = "Grafana Viewer"
+  scope                = azurerm_dashboard_grafana.main.id
+}

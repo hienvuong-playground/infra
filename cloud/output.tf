@@ -81,3 +81,7 @@ output "azmon_otlp_logs_endpoint" {
 output "azmon_otlp_metrics_endpoint" {
   value = local.azmon_otlp_metrics_endpoint
 }
+
+output "managed_grafana_endpoint" {
+  value = azurerm_dashboard_grafana.main.endpoint
+}
