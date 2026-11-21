@@ -87,6 +87,7 @@ PROVIDERS=(
   Microsoft.Network Microsoft.ContainerRegistry Microsoft.KeyVault Microsoft.DBforPostgreSQL
   Microsoft.ServiceBus Microsoft.OperationalInsights Microsoft.Insights Microsoft.Monitor
   Microsoft.Automation Microsoft.Kubernetes Microsoft.KubernetesConfiguration
+  Microsoft.Dashboard Microsoft.AlertsManagement
 )
 
 az provider register --namespace Microsoft.Storage --wait
