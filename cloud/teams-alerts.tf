@@ -1,4 +1,4 @@
-# Action group -> Logic App -> Teams Workflows webhook (note 0031).
+# Action group -> Logic App -> Teams Workflows webhook (note 0032).
 # The webhook only accepts Adaptive Card / MessageCard payloads, so the Logic App reshapes the common alert schema.
 
 # Own vault: Microsoft recommends one vault per application with roles at vault scope, not per secret.

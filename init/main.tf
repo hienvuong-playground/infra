@@ -122,7 +122,7 @@ resource "github_actions_organization_secret_repositories" "cloudflare_api_token
   selected_repository_ids = [local.github_repo_ids.infra]
 }
 
-# Created by hand in Teams (Workflows "Send webhook alerts to a channel"), note 0031.
+# Created by hand in Teams (Workflows "Send webhook alerts to a channel"), note 0032.
 resource "github_actions_organization_secret" "teams_alerts_webhook_url" {
   secret_name = "TEAMS_ALERTS_WEBHOOK_URL"
   visibility  = "selected"
