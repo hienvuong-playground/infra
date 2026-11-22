@@ -1,6 +1,6 @@
 # prometheus-ingress: default-deny ingress on Prometheus, allowing only the OTEL
-#                     Collector (remote-write), KEDA (ScaledObject metric queries),
-#                     and Thanos Query (sidecar gRPC). Grafana queries via Thanos Query.
+#                     Collector (remote-write) and Thanos Query (sidecar gRPC).
+#                     Grafana queries via Thanos Query.
 #
 # NOTE: clients reach Prometheus via the Service on port 80, but Cilium
 # enforces on the destination *pod* port, which is 9090 (the prometheus-server
@@ -15,16 +15,11 @@ spec:
     matchLabels:
       app.kubernetes.io/name: prometheus
   ingress:
-    # All allowed clients query the prometheus-server container port (9090/TCP).
-    # fromEndpoints is OR'd, so a source matching any selector is permitted.
+    # OTEL Collector remote-write (/api/v1/write) on the prometheus-server
+    # container port (9090/TCP).
     - fromEndpoints:
-        # OTEL Collector remote-write (/api/v1/write)
         - matchLabels:
             app.kubernetes.io/name: otel-collector
-        # KEDA operator scaler polling (Prometheus trigger for the backend ScaledObject)
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: kube-system
-            app.kubernetes.io/name: keda-operator
       toPorts:
         - ports:
             - port: "9090"
