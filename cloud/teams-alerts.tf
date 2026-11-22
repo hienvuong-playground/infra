@@ -330,7 +330,7 @@ locals {
   # and xpath() reads each element's name and value by position.
   teams_alerts_pairs = {
     for kind in ["labels", "annotations"] : kind => {
-      json  = "@concat('{\"r\":', string(coalesce(items('for-each-alert')?['alertContext']?['${kind}'], json('{}'))), '}')"
+      json  = "@json(concat('{\"r\":', string(coalesce(items('for-each-alert')?['alertContext']?['${kind}'], json('{}'))), '}'))"
       count = "@int(string(xpath(xml(outputs('${kind}-json')), 'count(/r/*)')))"
     }
   }
@@ -469,7 +469,7 @@ resource "azurerm_logic_app_action_custom" "teams_alerts_batch_for_each_group" {
       "first-json" = {
         type     = "Compose"
         runAfter = { "for-each-alert" = ["Succeeded"] }
-        inputs   = "@concat('{\"r\":', string(first(body('group-alerts'))?['alertContext']?['labels']), '}')"
+        inputs   = "@json(concat('{\"r\":', string(first(body('group-alerts'))?['alertContext']?['labels']), '}'))"
       }
       "first-count" = {
         type     = "Compose"
