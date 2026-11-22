@@ -2,7 +2,7 @@
 # The webhook only accepts Adaptive Card / MessageCard payloads, so the Logic App reshapes the common alert schema.
 
 locals {
-  teams_alerts_batch_name = "teams-alerts"
+  teams_alerts_batch_name = "TeamsAlerts"
 
   teams_alerts_get_webhook_url_inputs = {
     method = "GET"
