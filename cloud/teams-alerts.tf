@@ -113,9 +113,8 @@ resource "azurerm_logic_app_action_custom" "teams_alerts_route" {
         type     = "SendToBatch"
         runAfter = {}
         inputs = {
-          batchName     = local.teams_alerts_batch_name
-          content       = "@triggerBody()?['data']"
-          partitionName = "@{triggerBody()?['data']?['alertContext']?['labels']?['alertname']}|@{triggerBody()?['data']?['alertContext']?['labels']?['cluster']}"
+          batchName = local.teams_alerts_batch_name
+          content   = "@triggerBody()?['data']"
           host = {
             triggerName = azurerm_logic_app_trigger_custom.teams_alerts_batch.name
             workflow    = { id = azurerm_logic_app_workflow.teams_alerts_batch.id }
