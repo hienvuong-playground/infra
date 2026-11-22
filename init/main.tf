@@ -122,6 +122,18 @@ resource "github_actions_organization_secret_repositories" "cloudflare_api_token
   selected_repository_ids = [local.github_repo_ids.infra]
 }
 
+# Created by hand in Teams (Workflows "Send webhook alerts to a channel"), note 0031.
+resource "github_actions_organization_secret" "teams_alerts_webhook_url" {
+  secret_name = "TEAMS_ALERTS_WEBHOOK_URL"
+  visibility  = "selected"
+  value       = var.teams_alerts_webhook_url
+}
+
+resource "github_actions_organization_secret_repositories" "teams_alerts_webhook_url" {
+  secret_name             = github_actions_organization_secret.teams_alerts_webhook_url.secret_name
+  selected_repository_ids = [local.github_repo_ids.infra]
+}
+
 data "azuread_client_config" "current" {}
 
 resource "azuread_group" "admin" {

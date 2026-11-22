@@ -71,6 +71,8 @@ else
     [[ $(cf "/zones?name=$CLOUDFLARE_ZONE" | jq '.result | length? // 0') -eq 1 ]] ||
       fail "Cloudflare: token can't read zone $CLOUDFLARE_ZONE"
   fi
+
+  grep -q '^teams_alerts_webhook_url *= *"https://' "$TFVARS" || fail "$TFVARS: teams_alerts_webhook_url not set"
 fi
 
 if ((${#errors[@]})); then
