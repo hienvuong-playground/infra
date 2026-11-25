@@ -32,7 +32,7 @@ jobs:
               - 'terraform-backend/**'
 
   terraform-cloud:
-    runs-on: self-hosted
+    runs-on: ubuntu-24.04
     needs: changes
     if: needs.changes.outputs.terraform == 'true'
     defaults:
