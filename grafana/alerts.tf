@@ -403,6 +403,7 @@ resource "grafana_rule_group" "kubernetes_platform" {
       data {
         ref_id         = "query"
         datasource_uid = data.grafana_data_source.azure_monitor.uid
+        query_type     = "Azure Monitor"
         # A series over the last 5 minutes; the reduce node averages it (AMBA: Average over PT5M).
         relative_time_range {
           from = 300
