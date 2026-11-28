@@ -236,13 +236,15 @@ locals {
           histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{job="kubelet"}[5m])) by (cluster, instance, le)) * on(cluster, instance) group_left(node) kubelet_node_name{job="kubelet"} > 60
         EOT
       },
+      # Not Microsoft's expression: theirs joins on `pod`, which kubelet_volume_stats_* don't have, so it
+      # can never fire (empty, or "many-to-many matching" with 2+ PVCs in a namespace). Note 0035.
       {
         alert           = "KubePVUsageHigh"
         for             = "15m"
         keep_firing_for = "10m"
-        description     = "Average PV usage on pod {{ $labels.pod }} in container {{ $labels.container }}  is greater than 80%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."
+        description     = "Average PV usage of PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is greater than 80%. For more information on this alert, please refer to this [link](https://aka.ms/aks-alerts/pod-level-recommended-alerts)."
         expr            = <<-EOT
-          avg by (namespace, controller, container, cluster)(((kubelet_volume_stats_used_bytes{job="kubelet"} / on(namespace,cluster,pod,container) group_left kubelet_volume_stats_capacity_bytes{job="kubelet"}) * on(namespace, pod, cluster) group_left(controller) label_replace(kube_pod_owner, "controller", "$1", "owner_name", "(.*)"))) > .8
+          kubelet_volume_stats_used_bytes{job="kubelet"} / kubelet_volume_stats_capacity_bytes{job="kubelet"} > .8
         EOT
       },
       {
@@ -295,6 +297,8 @@ data "grafana_data_source" "azure_monitor" {
 
 # Same shape as Grafana's own Prometheus import (pkg/services/ngalert/prom/convert.go): the math node
 # turns every returned series into 1, so a rule fires on any result and an empty result is Normal.
+# One difference: exec_err_state is Error, not OK, so a failing query (AMW down, or a broken rule)
+# raises DatasourceError instead of staying silent.
 resource "grafana_rule_group" "kubernetes" {
   for_each         = local.kubernetes_alert_groups
   name             = each.key
@@ -309,7 +313,7 @@ resource "grafana_rule_group" "kubernetes" {
       for                             = rule.value.for
       keep_firing_for                 = rule.value.keep_firing_for
       no_data_state                   = "OK"
-      exec_err_state                  = "OK"
+      exec_err_state                  = "Error"
       missing_series_evals_to_resolve = 1
       labels                          = { severity = "warning" }
       annotations                     = { description = rule.value.description }
@@ -361,54 +365,6 @@ resource "grafana_rule_group" "kubernetes" {
           refId      = "threshold"
         })
       }
-    }
-  }
-}
-
-# The kubernetes rules ignore query errors (exec_err_state OK), so this one rule reports when the
-# workspace itself can't be queried (Grafana's connectivity-errors guide).
-resource "grafana_rule_group" "datasource_health" {
-  name             = "Datasource-health"
-  folder_uid       = grafana_folder.observability.uid
-  interval_seconds = 60
-
-  rule {
-    name           = "AzureMonitorWorkspaceUnreachable"
-    condition      = "threshold"
-    for            = "5m"
-    no_data_state  = "Alerting"
-    exec_err_state = "Alerting"
-    annotations    = { description = "Grafana can't query the Azure Monitor workspace. The Kubernetes alert rules aren't evaluated while this fires." }
-
-    data {
-      ref_id         = "query"
-      datasource_uid = data.grafana_data_source.managed_prometheus.uid
-      relative_time_range {
-        from = 660
-        to   = 60
-      }
-      model = jsonencode({
-        datasource = { type = data.grafana_data_source.managed_prometheus.type, uid = data.grafana_data_source.managed_prometheus.uid }
-        expr       = "vector(1)"
-        instant    = true
-        range      = false
-        refId      = "query"
-      })
-    }
-
-    data {
-      ref_id         = "threshold"
-      datasource_uid = "__expr__"
-      relative_time_range {
-        from = 0
-        to   = 0
-      }
-      model = jsonencode({
-        type       = "threshold"
-        expression = "query"
-        conditions = [{ evaluator = { type = "lt", params = [1] } }]
-        refId      = "threshold"
-      })
     }
   }
 }
