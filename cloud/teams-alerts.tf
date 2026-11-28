@@ -1,3 +1,4 @@
+# Disabled: alerting moved to Grafana (note 0035). Kept for reference.
 # Action group -> Logic App -> Teams Workflows webhook (note 0032).
 # The webhook only accepts Adaptive Card / MessageCard payloads, so the Logic App reshapes the common alert schema.
 
@@ -46,6 +47,7 @@ resource "azurerm_logic_app_workflow" "teams_alerts" {
   name                = "logic-${local.project_name}-teams-alerts"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+  enabled             = false
 
   identity {
     type = "SystemAssigned"
@@ -223,6 +225,7 @@ resource "azurerm_logic_app_workflow" "teams_alerts_batch" {
   name                = "logic-${local.project_name}-teams-alerts-batch"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+  enabled             = false
 
   identity {
     type = "SystemAssigned"

@@ -1,3 +1,4 @@
+# Disabled: alerting moved to Grafana (note 0035). Kept for reference.
 # Ported unchanged from https://aka.ms/azureprometheus-recommendedmetricalerts
 # (Azure/prometheus-collector GeneratedMonitoringArtifacts/Default/recommendedMetricAlerts.json).
 
@@ -7,7 +8,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "kubernetes_alerts_cluste
   resource_group_name = azurerm_resource_group.main.name
   cluster_name        = azurerm_kubernetes_cluster.main.name
   description         = "Kubernetes Alert RuleGroup-RecommendedMetricAlerts - 0.1"
-  rule_group_enabled  = true
+  rule_group_enabled  = false
   interval            = "PT1M"
   scopes              = [azurerm_monitor_workspace.main.id, azurerm_kubernetes_cluster.main.id]
 
@@ -249,7 +250,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "kubernetes_alerts_node" 
   resource_group_name = azurerm_resource_group.main.name
   cluster_name        = azurerm_kubernetes_cluster.main.name
   description         = "Kubernetes Alert RuleGroup-RecommendedMetricAlerts - 0.1"
-  rule_group_enabled  = true
+  rule_group_enabled  = false
   interval            = "PT1M"
   scopes              = [azurerm_monitor_workspace.main.id, azurerm_kubernetes_cluster.main.id]
 
@@ -323,7 +324,7 @@ resource "azurerm_monitor_alert_prometheus_rule_group" "kubernetes_alerts_pod" {
   resource_group_name = azurerm_resource_group.main.name
   cluster_name        = azurerm_kubernetes_cluster.main.name
   description         = "Kubernetes Alert RuleGroup-RecommendedMetricAlerts - 0.1"
-  rule_group_enabled  = true
+  rule_group_enabled  = false
   interval            = "PT1M"
   scopes              = [azurerm_monitor_workspace.main.id, azurerm_kubernetes_cluster.main.id]
 
@@ -690,6 +691,7 @@ resource "azurerm_monitor_metric_alert" "kubernetes_platform" {
   severity            = 3
   window_size         = "PT5M"
   frequency           = "PT5M"
+  enabled             = false
 
   criteria {
     metric_namespace = "Microsoft.ContainerService/managedClusters"
